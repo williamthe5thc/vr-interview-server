@@ -297,10 +297,8 @@ def process_audio_and_respond(session_id, audio_path):
         # Get the Flask app (needed to access the config)
         from flask import current_app
         
-        # Create an application context
-        # This is the critical fix - we need an app context in this thread
-        from server import app  # Import the Flask app instance
-        with app.app_context():
+        # Use current_app directly instead of importing from server
+        with current_app.app_context():
             # Now we're inside an application context
             logger.info("Generating LLM response...")
             
