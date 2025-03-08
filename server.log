@@ -1,0 +1,119 @@
+2025-03-06 10:35:46,572 - interview-server - INFO - Interview State Manager initialized
+2025-03-06 10:35:46,583 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-06 10:35:46,594 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8080
+2025-03-06 10:35:46,594 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-06 10:35:46,595 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-06 10:35:46,595 - werkzeug - INFO -  * Restarting with stat
+2025-03-06 10:35:50,098 - interview-server - INFO - Interview State Manager initialized
+2025-03-06 10:35:50,101 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-06 10:35:50,101 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8080
+2025-03-06 10:35:50,102 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-06 10:35:50,102 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-06 10:35:50,102 - werkzeug - WARNING -  * Debugger is active!
+2025-03-06 10:35:50,105 - werkzeug - INFO -  * Debugger PIN: 982-476-927
+2025-03-06 11:25:01,641 - werkzeug - INFO -  * Detected change in 'D:\\vr-interview-server\\test_server.py', reloading
+2025-03-06 11:25:02,055 - werkzeug - INFO -  * Restarting with stat
+2025-03-06 11:25:05,662 - interview-server - INFO - Interview State Manager initialized
+2025-03-06 11:25:05,664 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-06 11:25:05,665 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8080
+2025-03-06 11:25:05,665 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-06 11:25:05,665 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-06 11:25:05,665 - werkzeug - WARNING -  * Debugger is active!
+2025-03-06 11:25:05,669 - werkzeug - INFO -  * Debugger PIN: 982-476-927
+2025-03-06 11:25:28,760 - interview-server - INFO - Interview State Manager initialized
+2025-03-06 11:25:28,763 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-06 11:25:28,764 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8080
+2025-03-06 11:25:28,764 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-06 11:25:28,764 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-06 11:25:28,764 - werkzeug - INFO -  * Restarting with stat
+2025-03-06 11:25:32,280 - interview-server - INFO - Interview State Manager initialized
+2025-03-06 11:25:32,281 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-06 11:25:32,282 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8080
+2025-03-06 11:25:32,282 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-06 11:25:32,282 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-06 11:25:32,283 - werkzeug - WARNING -  * Debugger is active!
+2025-03-06 11:25:32,285 - werkzeug - INFO -  * Debugger PIN: 982-476-927
+2025-03-06 11:26:41,040 - werkzeug - INFO -  * Detected change in 'D:\\vr-interview-server\\server.py', reloading
+2025-03-06 11:26:41,378 - werkzeug - INFO -  * Restarting with stat
+2025-03-06 11:26:44,981 - interview-server - INFO - Interview State Manager initialized
+2025-03-06 11:26:44,984 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-06 11:26:44,984 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8080
+2025-03-06 11:26:44,985 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-06 11:26:44,985 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-06 11:26:44,985 - werkzeug - WARNING -  * Debugger is active!
+2025-03-06 11:26:44,987 - werkzeug - INFO -  * Debugger PIN: 982-476-927
+2025-03-06 11:26:54,086 - werkzeug - INFO -  * Detected change in 'D:\\vr-interview-server\\server.py', reloading
+2025-03-06 11:26:54,439 - werkzeug - INFO -  * Restarting with stat
+2025-03-06 11:26:57,884 - interview-server - INFO - Interview State Manager initialized
+2025-03-06 11:26:57,886 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-06 11:26:57,887 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8080
+2025-03-06 11:26:57,887 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-06 11:26:57,887 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-06 11:26:57,887 - werkzeug - WARNING -  * Debugger is active!
+2025-03-06 11:26:57,889 - werkzeug - INFO -  * Debugger PIN: 982-476-927
+2025-03-06 11:27:06,007 - werkzeug - INFO -  * Detected change in 'D:\\vr-interview-server\\server.py', reloading
+2025-03-06 11:27:06,314 - werkzeug - INFO -  * Restarting with stat
+2025-03-06 11:28:20,619 - interview-server - INFO - Interview State Manager initialized
+2025-03-06 11:28:20,621 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-06 11:28:20,622 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8080
+2025-03-06 11:28:20,622 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-06 11:28:20,622 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-06 11:30:13,085 - interview-server - INFO - Interview State Manager initialized
+2025-03-06 11:30:13,088 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-06 11:30:13,088 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8080
+2025-03-06 11:30:13,088 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-06 11:30:13,088 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-06 11:30:36,689 - interview-server - INFO - Interview State Manager initialized
+2025-03-06 11:30:36,690 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-06 11:30:36,691 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8081
+2025-03-06 11:30:36,691 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-06 11:30:36,691 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-06 11:38:43,137 - interview-server - INFO - Client connected: sTf7ejdCCgMT2Pd1AAAB
+2025-03-06 11:38:43,138 - interview-server - INFO - Created new interview session: ca8d81a4-1839-49b0-8e71-51ab3dd9e32b
+2025-03-06 11:38:43,138 - interview-server - INFO - Session created: ca8d81a4-1839-49b0-8e71-51ab3dd9e32b for client: sTf7ejdCCgMT2Pd1AAAB
+2025-03-06 11:38:44,142 - interview-server - INFO - Client disconnected: sTf7ejdCCgMT2Pd1AAAB
+2025-03-06 11:38:44,143 - interview-server - INFO - Marking session ca8d81a4-1839-49b0-8e71-51ab3dd9e32b as inactive
+2025-03-06 11:40:01,192 - interview-server - INFO - Client connected: HeWxOPbAiDL08STIAAAD
+2025-03-06 11:40:01,192 - interview-server - INFO - Created new interview session: 49fbf536-357f-4dbc-8e42-2b657eb28941
+2025-03-06 11:40:01,192 - interview-server - INFO - Session created: 49fbf536-357f-4dbc-8e42-2b657eb28941 for client: HeWxOPbAiDL08STIAAAD
+2025-03-06 11:40:02,197 - interview-server - INFO - Client disconnected: HeWxOPbAiDL08STIAAAD
+2025-03-06 11:40:02,197 - interview-server - INFO - Marking session 49fbf536-357f-4dbc-8e42-2b657eb28941 as inactive
+2025-03-06 11:40:43,140 - interview-server - INFO - Interview State Manager initialized
+2025-03-06 11:40:43,144 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-06 11:40:43,144 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8081
+2025-03-06 11:40:43,145 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-06 11:40:43,145 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-06 11:40:50,706 - interview-server - INFO - Client connected: QMvqYbyvCdnfOUeqAAAB
+2025-03-06 11:40:50,707 - interview-server - INFO - Created new interview session: 3760a646-061c-4d82-8df8-fb390d8341e4
+2025-03-06 11:40:50,707 - interview-server - INFO - Session created: 3760a646-061c-4d82-8df8-fb390d8341e4 for client: QMvqYbyvCdnfOUeqAAAB
+2025-03-06 11:40:51,717 - interview-server - INFO - Client disconnected: QMvqYbyvCdnfOUeqAAAB
+2025-03-06 11:40:51,717 - interview-server - INFO - Marking session 3760a646-061c-4d82-8df8-fb390d8341e4 as inactive
+2025-03-06 11:42:47,448 - interview-server - INFO - Client connected: 5eKHhMV_LjqJJIL-AAAD
+2025-03-06 11:42:47,448 - interview-server - INFO - Created new interview session: db7de9b3-18a1-4f98-b18c-1e88e0ac71ab
+2025-03-06 11:42:47,450 - interview-server - INFO - Session created: db7de9b3-18a1-4f98-b18c-1e88e0ac71ab for client: 5eKHhMV_LjqJJIL-AAAD
+2025-03-06 11:48:27,500 - interview-server - INFO - Client disconnected: 5eKHhMV_LjqJJIL-AAAD
+2025-03-06 11:48:27,500 - interview-server - INFO - Marking session db7de9b3-18a1-4f98-b18c-1e88e0ac71ab as inactive
+2025-03-06 11:48:44,357 - interview-server - INFO - Client connected: 9sjhT47PQuGgPB-cAAAF
+2025-03-06 11:48:44,357 - interview-server - INFO - Created new interview session: 77709fb7-baab-4e87-b701-db2404027166
+2025-03-06 11:48:44,357 - interview-server - INFO - Session created: 77709fb7-baab-4e87-b701-db2404027166 for client: 9sjhT47PQuGgPB-cAAAF
+2025-03-06 12:15:43,220 - interview-server - INFO - Cleaned up 1 inactive sessions
+2025-03-06 12:15:43,220 - interview-server - INFO - Cleaned up 1 inactive sessions
+2025-03-06 12:20:43,231 - interview-server - INFO - Cleaned up 1 inactive sessions
+2025-03-06 12:20:43,231 - interview-server - INFO - Cleaned up 1 inactive sessions
+2025-03-06 14:26:02,640 - interview-server - INFO - Client disconnected: 9sjhT47PQuGgPB-cAAAF
+2025-03-06 14:26:02,642 - interview-server - INFO - Marking session 77709fb7-baab-4e87-b701-db2404027166 as inactive
+2025-03-06 14:26:09,843 - interview-server - INFO - Client connected: HRvsWA52nxPVYTjQAAAH
+2025-03-06 14:26:09,844 - interview-server - INFO - Created new interview session: f75ca344-6f1e-422f-965c-dfe4dd866f1b
+2025-03-06 14:26:09,844 - interview-server - INFO - Session created: f75ca344-6f1e-422f-965c-dfe4dd866f1b for client: HRvsWA52nxPVYTjQAAAH
+2025-03-06 14:27:10,197 - interview-server - INFO - Client disconnected: HRvsWA52nxPVYTjQAAAH
+2025-03-06 14:27:10,197 - interview-server - INFO - Marking session f75ca344-6f1e-422f-965c-dfe4dd866f1b as inactive
+2025-03-06 14:28:29,804 - interview-server - INFO - Client connected: x_RlgSyuUQ8MVYn3AAAJ
+2025-03-06 14:28:29,804 - interview-server - INFO - Created new interview session: 56011970-36ef-4111-9946-e36ad20159d3
+2025-03-06 14:28:29,805 - interview-server - INFO - Session created: 56011970-36ef-4111-9946-e36ad20159d3 for client: x_RlgSyuUQ8MVYn3AAAJ
+2025-03-06 14:28:38,469 - interview-server - INFO - Client disconnected: x_RlgSyuUQ8MVYn3AAAJ
+2025-03-06 14:28:38,470 - interview-server - INFO - Marking session 56011970-36ef-4111-9946-e36ad20159d3 as inactive
+2025-03-06 14:29:21,658 - interview-server - INFO - Interview State Manager initialized
+2025-03-06 14:29:21,661 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-06 14:29:21,661 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8081
+2025-03-06 14:29:21,661 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-06 14:29:21,661 - interview-server - INFO - Using TTS engine: gTTS

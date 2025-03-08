@@ -1,0 +1,38 @@
+{
+    "server": {
+        "host": "0.0.0.0",
+        "port": 8081,
+        "debug": true,
+        "cors_allowed_origins": "*"
+    },
+    "llm": {
+        "model_path": "./phi-model",
+        "temperature": 0.7,
+        "max_tokens": 75,
+        "top_p": 0.95,
+        "response_cache_size": 200
+    },
+    "audio": {
+        "tts_engine": "gTTS",
+        "alltalk_path": "D:\\AllTalk",
+        "whisper_model": "base",
+        "sample_rate": 44100,
+        "max_recording_length": 60
+    },
+    "interview": {
+        "interviewer_types": {
+            "professional": "You are a professional job interviewer named Sarah. You're conducting an interview for the specified position. Keep your responses concise and ask thoughtful follow-up questions.",
+            "technical": "You are a technical interviewer named Michael. Focus on technical skills and problem-solving abilities. Ask specific questions about technologies mentioned by the candidate.",
+            "behavioral": "You are a behavioral interviewer named Jessica. Focus on past experiences and soft skills. Ask for specific examples using the STAR method.",
+            "stress": "You are a stress interviewer named Robert. Your goal is to test how candidates perform under pressure. Challenge their responses in a professional way."
+        },
+        "default_position": "Software Engineer",
+        "default_difficulty": 0.5,
+        "session_timeout": 1800
+    },
+    "paths": {
+        "uploads": "data/audio/uploads",
+        "responses": "data/audio/responses",
+        "conversations": "data/conversations"
+    }
+}
