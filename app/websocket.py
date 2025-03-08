@@ -253,11 +253,9 @@ def process_audio_and_respond(session_id, audio_path):
     Process audio input and generate interviewer response.
     This function runs in a separate thread.
     """
-    logger.info(f"process audio")
-
+    logger.info(f"Starting process_audio_and_respond for session {session_id}")
+    
     try:
-        logger.info(f"Starting process_audio_and_respond for session {session_id}")
-        
         # Get socketio from state manager
         socketio = state_manager.socketio
         if not socketio:
@@ -296,39 +294,88 @@ def process_audio_and_respond(session_id, audio_path):
         session.add_message("user", transcription)
         logger.info("Added user message to conversation history")
         
-        # Generate speech from text
-        response_audio_path = os.path.join(
-            current_app.config['RESPONSE_FOLDER'], 
-            f"{session_id}_{session.turn_index}.wav"
-        )
+        # Get the Flask app (needed to access the config)
+        from flask import current_app
         
-        success = generate_speech(response_text, response_audio_path, config)
-        if not success:
-            logger.warning(f"Failed to generate speech for session {session_id}, continuing with text only")
-        
-        # Update state to responding
-        state_manager.update_session_state(session_id, 'responding')
-        
-        # Construct relative URL for audio file
-        # This will be requested via HTTP
-        audio_url = f"/responses/{session_id}_{session.turn_index}.wav"
-        
-        # Send response to client
-        socketio.emit('response_ready', {
-            'session_id': session_id,
-            'text': response_text,
-            'audio_url': audio_url
-        }, room=session_id)
-        
-        # Wait a bit to simulate audio playback (client will notify when done in real impl)
-        # In a full implementation, the client would signal when audio playback is complete
-        estimated_playback_time = len(response_text.split()) * 0.3  # Rough estimate: 0.3s per word
-        eventlet.sleep(max(estimated_playback_time, 2))
-        
-        # Update turn index and move to waiting state
-        session.turn_index += 1
-        state_manager.update_session_state(session_id, 'waiting')
-        
+        # Create an application context
+        # This is the critical fix - we need an app context in this thread
+        from server import app  # Import the Flask app instance
+        with app.app_context():
+            # Now we're inside an application context
+            logger.info("Generating LLM response...")
+            
+            # Get app config
+            config = current_app.config.get('APP_CONFIG', {})
+            
+            # Get interviewer personality prompt from config
+            interviewer_type = session.interviewer_type
+            position = session.position
+            difficulty = session.difficulty
+            
+            interviewer_prompts = config.get('interview', {}).get('interviewer_types', {})
+            personality_prompt = interviewer_prompts.get(
+                interviewer_type, 
+                "You are an interviewer conducting a job interview."
+            )
+            
+            # Format conversation history for LLM
+            from services.llm_service import format_conversation_for_llm, generate_llm_response
+            formatted_history = format_conversation_for_llm(session.conversation_history)
+            
+            # Generate response from LLM
+            response_text = generate_llm_response(
+                transcription,
+                formatted_history,
+                personality_prompt,
+                position,
+                difficulty,
+                config
+            )
+            
+            if not response_text:
+                logger.error(f"Failed to generate LLM response for session {session_id}")
+                state_manager.update_session_state(session_id, 'error')
+                socketio.emit('error', {'message': 'Failed to generate response'}, room=session_id)
+                return
+                
+            logger.info(f"LLM response generated: {response_text}")
+            
+            # Add interviewer message to conversation history
+            session.add_message("interviewer", response_text)
+            
+            # Generate speech from text
+            response_audio_path = os.path.join(
+                current_app.config['RESPONSE_FOLDER'], 
+                f"{session_id}_{session.turn_index}.wav"
+            )
+            
+            success = generate_speech(response_text, response_audio_path, config)
+            if not success:
+                logger.warning(f"Failed to generate speech for session {session_id}, continuing with text only")
+            
+            # Update state to responding
+            state_manager.update_session_state(session_id, 'responding')
+            
+            # Construct relative URL for audio file
+            # This will be requested via HTTP
+            audio_url = f"/responses/{session_id}_{session.turn_index}.wav"
+            
+            # Send response to client
+            socketio.emit('response_ready', {
+                'session_id': session_id,
+                'text': response_text,
+                'audio_url': audio_url
+            }, room=session_id)
+            
+            # Wait a bit to simulate audio playback (client will notify when done in real impl)
+            # In a full implementation, the client would signal when audio playback is complete
+            estimated_playback_time = len(response_text.split()) * 0.3  # Rough estimate: 0.3s per word
+            eventlet.sleep(max(estimated_playback_time, 2))
+            
+            # Update turn index and move to waiting state
+            session.turn_index += 1
+            state_manager.update_session_state(session_id, 'waiting')
+            
     except Exception as e:
         logger.error(f"Error in process_audio_and_respond: {e}")
         state_manager.update_session_state(session_id, 'error')

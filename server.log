@@ -263,3 +263,175 @@
 2025-03-07 22:07:35,393 - interview-server - INFO - Client connected: s521G6GIpWghAIJDAAAB
 2025-03-07 22:07:35,393 - interview-server - INFO - Created new interview session: b45de04e-fd4d-4a04-b6e2-943dc8cd99e7
 2025-03-07 22:07:35,394 - interview-server - INFO - Session created: b45de04e-fd4d-4a04-b6e2-943dc8cd99e7 for client: s521G6GIpWghAIJDAAAB
+2025-03-07 22:12:37,943 - interview-server - INFO - Client disconnected: s521G6GIpWghAIJDAAAB
+2025-03-07 22:12:37,943 - interview-server - INFO - Marking session b45de04e-fd4d-4a04-b6e2-943dc8cd99e7 as inactive
+2025-03-07 22:12:43,767 - interview-server - INFO - Client connected: hL15_z3aK-nMh2xyAAAD
+2025-03-07 22:12:43,768 - interview-server - INFO - Created new interview session: 29fb0e7d-0b1b-4ac0-b69a-e4efdf6b3b40
+2025-03-07 22:12:43,768 - interview-server - INFO - Session created: 29fb0e7d-0b1b-4ac0-b69a-e4efdf6b3b40 for client: hL15_z3aK-nMh2xyAAAD
+2025-03-07 22:12:43,769 - interview-server - INFO - Client hL15_z3aK-nMh2xyAAAD joined session 29fb0e7d-0b1b-4ac0-b69a-e4efdf6b3b40
+2025-03-07 22:12:44,777 - interview-server - INFO - Session 29fb0e7d-0b1b-4ac0-b69a-e4efdf6b3b40 configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 22:12:48,023 - interview-server - INFO - Session 29fb0e7d-0b1b-4ac0-b69a-e4efdf6b3b40 state change: idle -> listening
+2025-03-07 22:12:48,023 - interview-server - INFO - Session 29fb0e7d-0b1b-4ac0-b69a-e4efdf6b3b40 now listening
+2025-03-07 22:12:48,090 - interview-server - INFO - audio received
+2025-03-07 22:12:48,149 - interview-server - INFO - audio received
+2025-03-07 22:47:29,887 - interview-server - INFO - Cleaned up 1 inactive sessions
+2025-03-07 22:47:29,887 - interview-server - INFO - Cleaned up 1 inactive sessions
+2025-03-07 23:02:21,065 - interview-server - INFO - Client disconnected: hL15_z3aK-nMh2xyAAAD
+2025-03-07 23:02:21,065 - interview-server - INFO - Marking session 29fb0e7d-0b1b-4ac0-b69a-e4efdf6b3b40 as inactive
+2025-03-07 23:02:47,323 - interview-server - INFO - Client connected: nBnKNo7-AaxMbZ2UAAAF
+2025-03-07 23:02:47,324 - interview-server - INFO - Created new interview session: 2b827358-91ad-4a56-8ae6-12fbb6e09db9
+2025-03-07 23:02:47,324 - interview-server - INFO - Session created: 2b827358-91ad-4a56-8ae6-12fbb6e09db9 for client: nBnKNo7-AaxMbZ2UAAAF
+2025-03-07 23:03:02,532 - interview-server - INFO - Client disconnected: nBnKNo7-AaxMbZ2UAAAF
+2025-03-07 23:03:02,532 - interview-server - INFO - Marking session 2b827358-91ad-4a56-8ae6-12fbb6e09db9 as inactive
+2025-03-07 23:03:20,385 - interview-server - INFO - Interview State Manager initialized
+2025-03-07 23:03:20,385 - interview-server - INFO - web socket started
+2025-03-07 23:03:20,387 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-07 23:03:20,388 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8081
+2025-03-07 23:03:20,388 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-07 23:03:20,388 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-07 23:03:28,746 - interview-server - INFO - Client connected: 4C1Y5xxA6M0cJhLRAAAB
+2025-03-07 23:03:28,746 - interview-server - INFO - Created new interview session: e879bbed-6dfe-4a65-b364-2ba5c13d8f0f
+2025-03-07 23:03:28,746 - interview-server - INFO - Session created: e879bbed-6dfe-4a65-b364-2ba5c13d8f0f for client: 4C1Y5xxA6M0cJhLRAAAB
+2025-03-07 23:03:28,749 - interview-server - INFO - join session thing
+2025-03-07 23:03:28,749 - interview-server - INFO - Client 4C1Y5xxA6M0cJhLRAAAB joined session e879bbed-6dfe-4a65-b364-2ba5c13d8f0f
+2025-03-07 23:03:29,752 - interview-server - INFO - Client configure session
+2025-03-07 23:03:29,752 - interview-server - INFO - Session e879bbed-6dfe-4a65-b364-2ba5c13d8f0f configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 23:03:34,904 - interview-server - INFO - start speaking
+2025-03-07 23:03:34,904 - interview-server - INFO - Session e879bbed-6dfe-4a65-b364-2ba5c13d8f0f state change: idle -> listening
+2025-03-07 23:03:34,905 - interview-server - INFO - Session e879bbed-6dfe-4a65-b364-2ba5c13d8f0f now listening
+2025-03-07 23:03:34,970 - interview-server - INFO - audio data
+2025-03-07 23:03:35,028 - interview-server - INFO - audio data
+2025-03-07 23:20:27,071 - interview-server - INFO - Client disconnected: 4C1Y5xxA6M0cJhLRAAAB
+2025-03-07 23:20:27,071 - interview-server - INFO - Marking session e879bbed-6dfe-4a65-b364-2ba5c13d8f0f as inactive
+2025-03-07 23:21:50,446 - interview-server - INFO - Interview State Manager initialized
+2025-03-07 23:21:50,446 - interview-server - INFO - web socket started
+2025-03-07 23:21:50,448 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-07 23:21:50,449 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8081
+2025-03-07 23:21:50,449 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-07 23:21:50,449 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-07 23:21:57,053 - interview-server - INFO - Client connected: Mksx-Amb5VL9xe0iAAAB
+2025-03-07 23:21:57,053 - interview-server - INFO - Created new interview session: 06c5d20d-239a-47df-9a72-e47d6b3f00c8
+2025-03-07 23:21:57,053 - interview-server - INFO - Session created: 06c5d20d-239a-47df-9a72-e47d6b3f00c8 for client: Mksx-Amb5VL9xe0iAAAB
+2025-03-07 23:22:04,807 - interview-server - INFO - Client disconnected: Mksx-Amb5VL9xe0iAAAB
+2025-03-07 23:22:04,807 - interview-server - INFO - Marking session 06c5d20d-239a-47df-9a72-e47d6b3f00c8 as inactive
+2025-03-07 23:26:21,452 - interview-server - INFO - Interview State Manager initialized
+2025-03-07 23:26:21,452 - interview-server - INFO - web socket started
+2025-03-07 23:26:21,456 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-07 23:26:21,457 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8081
+2025-03-07 23:26:21,457 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-07 23:26:21,457 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-07 23:26:31,519 - interview-server - INFO - Client connected: Y2q7rf876RdaZYfPAAAB
+2025-03-07 23:26:31,520 - interview-server - INFO - Created new interview session: 29ea7998-755e-4006-817b-084e024ed5a9
+2025-03-07 23:26:31,520 - interview-server - INFO - Session created: 29ea7998-755e-4006-817b-084e024ed5a9 for client: Y2q7rf876RdaZYfPAAAB
+2025-03-07 23:26:31,521 - interview-server - INFO - join session thing
+2025-03-07 23:26:31,521 - interview-server - INFO - Client Y2q7rf876RdaZYfPAAAB joined session 29ea7998-755e-4006-817b-084e024ed5a9
+2025-03-07 23:26:32,526 - interview-server - INFO - Client configure session
+2025-03-07 23:26:32,526 - interview-server - INFO - Session 29ea7998-755e-4006-817b-084e024ed5a9 configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 23:26:37,098 - interview-server - INFO - start speaking
+2025-03-07 23:26:37,098 - interview-server - INFO - Session 29ea7998-755e-4006-817b-084e024ed5a9 state change: idle -> listening
+2025-03-07 23:26:37,098 - interview-server - INFO - Session 29ea7998-755e-4006-817b-084e024ed5a9 now listening
+2025-03-07 23:26:37,161 - interview-server - INFO - audio data
+2025-03-07 23:26:38,107 - interview-server - INFO - Received stop_speaking event for session 29ea7998-755e-4006-817b-084e024ed5a9
+2025-03-07 23:26:38,108 - interview-server - INFO - Session 29ea7998-755e-4006-817b-084e024ed5a9 state change: listening -> processing
+2025-03-07 23:26:38,109 - interview-server - INFO - Session 29ea7998-755e-4006-817b-084e024ed5a9 now processing
+2025-03-07 23:26:38,110 - interview-server - INFO - Saved audio to data/audio/uploads\29ea7998-755e-4006-817b-084e024ed5a9_0.wav
+2025-03-07 23:26:38,110 - interview-server - INFO - process audio
+2025-03-07 23:26:38,110 - interview-server - INFO - Starting process_audio_and_respond for session 29ea7998-755e-4006-817b-084e024ed5a9
+2025-03-07 23:26:38,111 - interview-server - INFO - SocketIO instance obtained from state manager
+2025-03-07 23:26:38,111 - interview-server - INFO - Session retrieved: 29ea7998-755e-4006-817b-084e024ed5a9
+2025-03-07 23:26:38,111 - interview-server - INFO - Processing audio file at: data/audio/uploads\29ea7998-755e-4006-817b-084e024ed5a9_0.wav
+2025-03-07 23:26:38,111 - interview-server - INFO - Audio file exists at data/audio/uploads\29ea7998-755e-4006-817b-084e024ed5a9_0.wav
+2025-03-07 23:26:38,111 - interview-server - INFO - Starting audio transcription...
+2025-03-07 23:26:38,111 - interview-server - INFO - Loading Whisper model: base
+2025-03-07 23:26:38,828 - interview-server - INFO - Whisper model loaded successfully
+2025-03-07 23:26:39,879 - interview-server - INFO - Transcription completed in 1.05 seconds
+2025-03-07 23:26:39,879 - interview-server - INFO - Transcription for session 29ea7998-755e-4006-817b-084e024ed5a9: Hello, I'm interested in a flat-planned and new role-in position. Could you tell me more about the role?
+2025-03-07 23:26:39,879 - interview-server - INFO - Added user message to conversation history
+2025-03-07 23:26:39,880 - interview-server - INFO - Generating LLM response...
+2025-03-07 23:26:39,880 - interview-server - ERROR - Error in process_audio_and_respond: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-03-07 23:26:39,880 - interview-server - INFO - Session 29ea7998-755e-4006-817b-084e024ed5a9 state change: processing -> error
+2025-03-07 23:31:40,040 - interview-server - INFO - Client disconnected: Y2q7rf876RdaZYfPAAAB
+2025-03-07 23:31:40,040 - interview-server - INFO - Marking session 29ea7998-755e-4006-817b-084e024ed5a9 as inactive
+2025-03-07 23:31:48,065 - interview-server - INFO - Client connected: ZNbU5_85nwMCeruLAAAD
+2025-03-07 23:31:48,065 - interview-server - INFO - Created new interview session: ed3fccb6-2557-45ab-97fe-046f01a3ed9e
+2025-03-07 23:31:48,066 - interview-server - INFO - Session created: ed3fccb6-2557-45ab-97fe-046f01a3ed9e for client: ZNbU5_85nwMCeruLAAAD
+2025-03-07 23:31:48,067 - interview-server - INFO - join session thing
+2025-03-07 23:31:48,068 - interview-server - INFO - Client ZNbU5_85nwMCeruLAAAD joined session ed3fccb6-2557-45ab-97fe-046f01a3ed9e
+2025-03-07 23:31:49,083 - interview-server - INFO - Client configure session
+2025-03-07 23:31:49,083 - interview-server - INFO - Session ed3fccb6-2557-45ab-97fe-046f01a3ed9e configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 23:31:51,385 - interview-server - INFO - start speaking
+2025-03-07 23:31:51,385 - interview-server - INFO - Session ed3fccb6-2557-45ab-97fe-046f01a3ed9e state change: idle -> listening
+2025-03-07 23:31:51,385 - interview-server - INFO - Session ed3fccb6-2557-45ab-97fe-046f01a3ed9e now listening
+2025-03-07 23:31:51,449 - interview-server - INFO - audio data
+2025-03-07 23:31:52,396 - interview-server - INFO - Received stop_speaking event for session ed3fccb6-2557-45ab-97fe-046f01a3ed9e
+2025-03-07 23:31:52,397 - interview-server - INFO - Session ed3fccb6-2557-45ab-97fe-046f01a3ed9e state change: listening -> processing
+2025-03-07 23:31:52,397 - interview-server - INFO - Session ed3fccb6-2557-45ab-97fe-046f01a3ed9e now processing
+2025-03-07 23:31:52,398 - interview-server - INFO - Saved audio to data/audio/uploads\ed3fccb6-2557-45ab-97fe-046f01a3ed9e_0.wav
+2025-03-07 23:31:52,398 - interview-server - INFO - process audio
+2025-03-07 23:31:52,398 - interview-server - INFO - Starting process_audio_and_respond for session ed3fccb6-2557-45ab-97fe-046f01a3ed9e
+2025-03-07 23:31:52,398 - interview-server - INFO - SocketIO instance obtained from state manager
+2025-03-07 23:31:52,399 - interview-server - INFO - Session retrieved: ed3fccb6-2557-45ab-97fe-046f01a3ed9e
+2025-03-07 23:31:52,399 - interview-server - INFO - Processing audio file at: data/audio/uploads\ed3fccb6-2557-45ab-97fe-046f01a3ed9e_0.wav
+2025-03-07 23:31:52,399 - interview-server - INFO - Audio file exists at data/audio/uploads\ed3fccb6-2557-45ab-97fe-046f01a3ed9e_0.wav
+2025-03-07 23:31:52,399 - interview-server - INFO - Starting audio transcription...
+2025-03-07 23:31:53,075 - interview-server - INFO - Transcription completed in 0.68 seconds
+2025-03-07 23:31:53,075 - interview-server - INFO - Transcription for session ed3fccb6-2557-45ab-97fe-046f01a3ed9e: Hello, I'm interested in a flat-planned and new role-in position. Could you tell me more about the role?
+2025-03-07 23:31:53,075 - interview-server - INFO - Added user message to conversation history
+2025-03-07 23:31:53,075 - interview-server - INFO - Generating LLM response...
+2025-03-07 23:31:53,075 - interview-server - ERROR - Error in process_audio_and_respond: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-03-07 23:31:53,075 - interview-server - INFO - Session ed3fccb6-2557-45ab-97fe-046f01a3ed9e state change: processing -> error
+2025-03-07 23:33:21,055 - interview-server - INFO - Client disconnected: ZNbU5_85nwMCeruLAAAD
+2025-03-07 23:33:21,055 - interview-server - INFO - Marking session ed3fccb6-2557-45ab-97fe-046f01a3ed9e as inactive
+2025-03-07 23:33:36,834 - interview-server - INFO - Interview State Manager initialized
+2025-03-07 23:33:36,835 - interview-server - INFO - web socket started
+2025-03-07 23:33:36,837 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-07 23:33:36,838 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8081
+2025-03-07 23:33:36,838 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-07 23:33:36,838 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-07 23:33:43,199 - interview-server - INFO - Client connected: _km-Zqs_9DexBe9sAAAB
+2025-03-07 23:33:43,200 - interview-server - INFO - Created new interview session: d67e2566-3845-46ad-93b7-77e22de3162c
+2025-03-07 23:33:43,200 - interview-server - INFO - Session created: d67e2566-3845-46ad-93b7-77e22de3162c for client: _km-Zqs_9DexBe9sAAAB
+2025-03-07 23:34:00,920 - interview-server - INFO - Client disconnected: _km-Zqs_9DexBe9sAAAB
+2025-03-07 23:34:00,920 - interview-server - INFO - Marking session d67e2566-3845-46ad-93b7-77e22de3162c as inactive
+2025-03-07 23:34:13,243 - interview-server - INFO - Interview State Manager initialized
+2025-03-07 23:34:13,244 - interview-server - INFO - web socket started
+2025-03-07 23:34:13,246 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-07 23:34:13,247 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8081
+2025-03-07 23:34:13,247 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-07 23:34:13,247 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-07 23:34:24,510 - interview-server - INFO - Client connected: EcSYrCf6oLocAAjQAAAB
+2025-03-07 23:34:24,511 - interview-server - INFO - Created new interview session: e364c3f1-fe07-458c-9807-6e564dda58ef
+2025-03-07 23:34:24,511 - interview-server - INFO - Session created: e364c3f1-fe07-458c-9807-6e564dda58ef for client: EcSYrCf6oLocAAjQAAAB
+2025-03-07 23:34:24,512 - interview-server - INFO - join session thing
+2025-03-07 23:34:24,512 - interview-server - INFO - Client EcSYrCf6oLocAAjQAAAB joined session e364c3f1-fe07-458c-9807-6e564dda58ef
+2025-03-07 23:34:25,525 - interview-server - INFO - Client configure session
+2025-03-07 23:34:25,525 - interview-server - INFO - Session e364c3f1-fe07-458c-9807-6e564dda58ef configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 23:34:28,281 - interview-server - INFO - start speaking
+2025-03-07 23:34:28,281 - interview-server - INFO - Session e364c3f1-fe07-458c-9807-6e564dda58ef state change: idle -> listening
+2025-03-07 23:34:28,281 - interview-server - INFO - Session e364c3f1-fe07-458c-9807-6e564dda58ef now listening
+2025-03-07 23:34:28,347 - interview-server - INFO - audio data
+2025-03-07 23:34:29,294 - interview-server - INFO - Received stop_speaking event for session e364c3f1-fe07-458c-9807-6e564dda58ef
+2025-03-07 23:34:29,294 - interview-server - INFO - Session e364c3f1-fe07-458c-9807-6e564dda58ef state change: listening -> processing
+2025-03-07 23:34:29,294 - interview-server - INFO - Session e364c3f1-fe07-458c-9807-6e564dda58ef now processing
+2025-03-07 23:34:29,295 - interview-server - INFO - Saved audio to data/audio/uploads\e364c3f1-fe07-458c-9807-6e564dda58ef_0.wav
+2025-03-07 23:34:29,296 - interview-server - INFO - Starting process_audio_and_respond for session e364c3f1-fe07-458c-9807-6e564dda58ef
+2025-03-07 23:34:29,296 - interview-server - INFO - SocketIO instance obtained from state manager
+2025-03-07 23:34:29,296 - interview-server - INFO - Session retrieved: e364c3f1-fe07-458c-9807-6e564dda58ef
+2025-03-07 23:34:29,296 - interview-server - INFO - Processing audio file at: data/audio/uploads\e364c3f1-fe07-458c-9807-6e564dda58ef_0.wav
+2025-03-07 23:34:29,296 - interview-server - INFO - Audio file exists at data/audio/uploads\e364c3f1-fe07-458c-9807-6e564dda58ef_0.wav
+2025-03-07 23:34:29,296 - interview-server - INFO - Starting audio transcription...
+2025-03-07 23:34:29,297 - interview-server - INFO - Loading Whisper model: base
+2025-03-07 23:34:29,762 - interview-server - INFO - Whisper model loaded successfully
+2025-03-07 23:34:30,600 - interview-server - INFO - Transcription completed in 0.84 seconds
+2025-03-07 23:34:30,601 - interview-server - INFO - Transcription for session e364c3f1-fe07-458c-9807-6e564dda58ef: Hello, I'm interested in a flat-planned and new role-in position. Could you tell me more about the role?
+2025-03-07 23:34:30,601 - interview-server - INFO - Added user message to conversation history
+2025-03-07 23:34:30,603 - interview-server - ERROR - Error in process_audio_and_respond: cannot import name 'app' from 'server' (D:\vr-interview-server\server.py)
+2025-03-07 23:34:30,603 - interview-server - INFO - Session e364c3f1-fe07-458c-9807-6e564dda58ef state change: processing -> error

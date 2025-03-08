@@ -158,7 +158,7 @@ def start_speaking():
 def stop_speaking():
     """Stop the speaking process."""
     global session_id, current_state
-    
+    print("stoping the speaking entry function")
     if not session_id:
         print("No session ID available")
         return False
@@ -202,10 +202,10 @@ def send_test_audio(file_path="test_audio/speech_sample_1.wav"):
         
         print("Audio data sent")
         time.sleep(1)  # Give the server time to process
-        
+        print("slept")
         # Stop speaking
         stop_speaking()
-        
+        print("stop speaking")        
     except Exception as e:
         print(f"Error sending audio: {e}")
         stop_speaking()
