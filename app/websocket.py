@@ -24,7 +24,9 @@ logger = logging.getLogger("interview-server")
 
 def register_events(socketio):
     """Register WebSocket event handlers with the SocketIO instance."""
-    
+    state_manager.set_socketio(socketio)
+
+
     @socketio.on('connect')
     def handle_connect():
         """Handle new client connections."""
@@ -179,7 +181,8 @@ def register_events(socketio):
     def handle_stop_speaking(data):
         """Handle when user stops speaking."""
         session_id = data.get('session_id')
-        
+        logger.info(f"Received stop_speaking event for session {session_id}")
+
         if not session_id:
             emit('error', {'message': 'Session ID required'})
             return
@@ -246,20 +249,36 @@ def process_audio_and_respond(session_id, audio_path):
     """
     Process audio input and generate interviewer response.
     This function runs in a separate thread.
-    
-    Args:
-        session_id (str): The session ID
-        audio_path (str): Path to the audio file
     """
+    
     try:
+        logger.info(f"Starting process_audio_and_respond for session {session_id}")
+        
+        # Get socketio from state manager
+        socketio = state_manager.socketio
+        if not socketio:
+            logger.error("SocketIO instance not available")
+            return
+        logger.info("SocketIO instance obtained from state manager")
+        
         session = state_manager.get_session(session_id)
         if not session:
             logger.error(f"Session {session_id} not found during processing")
             return
+        logger.info(f"Session retrieved: {session_id}")
         
-        logger.info(f"Processing audio for session {session_id}")
+        logger.info(f"Processing audio file at: {audio_path}")
+        
+        # Check if audio file exists
+        if not os.path.exists(audio_path):
+            logger.error(f"Audio file not found: {audio_path}")
+            state_manager.update_session_state(session_id, 'error')
+            socketio.emit('error', {'message': 'Audio file not found'}, room=session_id)
+            return
+        logger.info(f"Audio file exists at {audio_path}")
         
         # Transcribe audio
+        logger.info("Starting audio transcription...")
         transcription = transcribe_audio(audio_path)
         if not transcription:
             logger.error(f"Failed to transcribe audio for session {session_id}")
@@ -271,38 +290,7 @@ def process_audio_and_respond(session_id, audio_path):
         
         # Add user message to conversation history
         session.add_message("user", transcription)
-        
-        # Generate LLM response
-        config = current_app.config.get('APP_CONFIG', {})
-        interviewer_type = session.interviewer_type or 'professional'
-        
-        # Get interviewer personality prompt
-        interviewer_prompts = config.get('interview', {}).get('interviewer_types', {})
-        personality_prompt = interviewer_prompts.get(interviewer_type, interviewer_prompts.get('professional', ''))
-        
-        # Get conversation history
-        conversation_history = session.get_formatted_history()
-        
-        # Generate response
-        response_text = generate_llm_response(
-            user_input=transcription,
-            conversation_history=conversation_history,
-            personality_prompt=personality_prompt,
-            position=session.position,
-            difficulty=session.difficulty,
-            config=config
-        )
-        
-        if not response_text:
-            logger.error(f"Failed to generate response for session {session_id}")
-            state_manager.update_session_state(session_id, 'error')
-            socketio.emit('error', {'message': 'Failed to generate response'}, room=session_id)
-            return
-        
-        logger.info(f"Response for session {session_id}: {response_text}")
-        
-        # Add interviewer message to conversation history
-        session.add_message("interviewer", response_text)
+        logger.info("Added user message to conversation history")
         
         # Generate speech from text
         response_audio_path = os.path.join(

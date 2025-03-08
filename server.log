@@ -117,3 +117,102 @@
 2025-03-06 14:29:21,661 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8081
 2025-03-06 14:29:21,661 - interview-server - INFO - Using LLM model: ./phi-model
 2025-03-06 14:29:21,661 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-07 19:10:18,399 - interview-server - INFO - Interview State Manager initialized
+2025-03-07 19:10:18,401 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-07 19:10:18,402 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8081
+2025-03-07 19:10:18,402 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-07 19:10:18,402 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-07 19:10:58,119 - interview-server - INFO - Client connected: Jf64bTeX-DRJSz9tAAAB
+2025-03-07 19:10:58,119 - interview-server - INFO - Created new interview session: b65eea1e-93ed-4ea5-bf01-90c5092efa54
+2025-03-07 19:10:58,120 - interview-server - INFO - Session created: b65eea1e-93ed-4ea5-bf01-90c5092efa54 for client: Jf64bTeX-DRJSz9tAAAB
+2025-03-07 19:11:11,458 - interview-server - INFO - Client disconnected: Jf64bTeX-DRJSz9tAAAB
+2025-03-07 19:11:11,459 - interview-server - INFO - Marking session b65eea1e-93ed-4ea5-bf01-90c5092efa54 as inactive
+2025-03-07 19:37:41,785 - interview-server - INFO - Client connected: cnW7jDRVFHB2-_v0AAAD
+2025-03-07 19:37:41,785 - interview-server - INFO - Created new interview session: 5b92f64f-e614-4c55-82fd-aec6e3e64000
+2025-03-07 19:37:41,785 - interview-server - INFO - Session created: 5b92f64f-e614-4c55-82fd-aec6e3e64000 for client: cnW7jDRVFHB2-_v0AAAD
+2025-03-07 19:40:15,188 - interview-server - INFO - Client disconnected: cnW7jDRVFHB2-_v0AAAD
+2025-03-07 19:40:15,189 - interview-server - INFO - Marking session 5b92f64f-e614-4c55-82fd-aec6e3e64000 as inactive
+2025-03-07 19:40:22,328 - interview-server - INFO - Client connected: gvw1qTRV1nKnYzfKAAAF
+2025-03-07 19:40:22,328 - interview-server - INFO - Created new interview session: 3a76f11a-a34a-4a79-ab50-48dbe68d21ed
+2025-03-07 19:40:22,328 - interview-server - INFO - Session created: 3a76f11a-a34a-4a79-ab50-48dbe68d21ed for client: gvw1qTRV1nKnYzfKAAAF
+2025-03-07 19:40:23,336 - interview-server - INFO - Client gvw1qTRV1nKnYzfKAAAF joined session 3a76f11a-a34a-4a79-ab50-48dbe68d21ed
+2025-03-07 19:40:24,349 - interview-server - INFO - Session 3a76f11a-a34a-4a79-ab50-48dbe68d21ed configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 19:40:35,523 - interview-server - INFO - Session 3a76f11a-a34a-4a79-ab50-48dbe68d21ed state change: idle -> listening
+2025-03-07 19:40:35,524 - interview-server - INFO - Session 3a76f11a-a34a-4a79-ab50-48dbe68d21ed now listening
+2025-03-07 19:44:21,684 - interview-server - INFO - Client disconnected: gvw1qTRV1nKnYzfKAAAF
+2025-03-07 19:44:21,684 - interview-server - INFO - Marking session 3a76f11a-a34a-4a79-ab50-48dbe68d21ed as inactive
+2025-03-07 19:44:28,347 - interview-server - INFO - Client connected: DowuVyWQJ3v_YAYmAAAH
+2025-03-07 19:44:28,347 - interview-server - INFO - Created new interview session: 753c25a7-e41e-4d20-90cf-28d43d7e33c3
+2025-03-07 19:44:28,347 - interview-server - INFO - Session created: 753c25a7-e41e-4d20-90cf-28d43d7e33c3 for client: DowuVyWQJ3v_YAYmAAAH
+2025-03-07 19:44:28,349 - interview-server - INFO - Client DowuVyWQJ3v_YAYmAAAH joined session 753c25a7-e41e-4d20-90cf-28d43d7e33c3
+2025-03-07 19:44:29,366 - interview-server - INFO - Session 753c25a7-e41e-4d20-90cf-28d43d7e33c3 configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 19:44:34,036 - interview-server - INFO - Session 753c25a7-e41e-4d20-90cf-28d43d7e33c3 state change: idle -> listening
+2025-03-07 19:44:34,037 - interview-server - INFO - Session 753c25a7-e41e-4d20-90cf-28d43d7e33c3 now listening
+2025-03-07 19:45:14,355 - interview-server - INFO - Client disconnected: DowuVyWQJ3v_YAYmAAAH
+2025-03-07 19:45:14,355 - interview-server - INFO - Marking session 753c25a7-e41e-4d20-90cf-28d43d7e33c3 as inactive
+2025-03-07 19:45:18,460 - interview-server - INFO - Cleaned up 1 inactive sessions
+2025-03-07 19:45:18,460 - interview-server - INFO - Cleaned up 1 inactive sessions
+2025-03-07 19:45:26,996 - interview-server - INFO - Client connected: izHRVyvFqKjtyXOeAAAJ
+2025-03-07 19:45:26,996 - interview-server - INFO - Created new interview session: 58d9e254-fc8a-4e1a-ad1f-71f93724e39b
+2025-03-07 19:45:26,996 - interview-server - INFO - Session created: 58d9e254-fc8a-4e1a-ad1f-71f93724e39b for client: izHRVyvFqKjtyXOeAAAJ
+2025-03-07 19:45:26,997 - interview-server - INFO - Client izHRVyvFqKjtyXOeAAAJ joined session 58d9e254-fc8a-4e1a-ad1f-71f93724e39b
+2025-03-07 19:45:27,999 - interview-server - INFO - Session 58d9e254-fc8a-4e1a-ad1f-71f93724e39b configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 19:45:36,787 - interview-server - INFO - Session 58d9e254-fc8a-4e1a-ad1f-71f93724e39b state change: idle -> listening
+2025-03-07 19:45:36,787 - interview-server - INFO - Session 58d9e254-fc8a-4e1a-ad1f-71f93724e39b now listening
+2025-03-07 19:49:51,811 - interview-server - INFO - Client disconnected: izHRVyvFqKjtyXOeAAAJ
+2025-03-07 19:49:51,812 - interview-server - INFO - Marking session 58d9e254-fc8a-4e1a-ad1f-71f93724e39b as inactive
+2025-03-07 19:49:58,760 - interview-server - INFO - Client connected: 31xezHEX_ZpEWtPqAAAL
+2025-03-07 19:49:58,760 - interview-server - INFO - Created new interview session: 8bd9a0b8-1ee6-4671-84aa-d11e3cb19899
+2025-03-07 19:49:58,760 - interview-server - INFO - Session created: 8bd9a0b8-1ee6-4671-84aa-d11e3cb19899 for client: 31xezHEX_ZpEWtPqAAAL
+2025-03-07 19:49:58,761 - interview-server - INFO - Client 31xezHEX_ZpEWtPqAAAL joined session 8bd9a0b8-1ee6-4671-84aa-d11e3cb19899
+2025-03-07 19:49:59,778 - interview-server - INFO - Session 8bd9a0b8-1ee6-4671-84aa-d11e3cb19899 configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 19:50:03,893 - interview-server - INFO - Session 8bd9a0b8-1ee6-4671-84aa-d11e3cb19899 state change: idle -> listening
+2025-03-07 19:50:03,893 - interview-server - INFO - Session 8bd9a0b8-1ee6-4671-84aa-d11e3cb19899 now listening
+2025-03-07 19:59:14,580 - interview-server - INFO - Client disconnected: 31xezHEX_ZpEWtPqAAAL
+2025-03-07 19:59:14,580 - interview-server - INFO - Marking session 8bd9a0b8-1ee6-4671-84aa-d11e3cb19899 as inactive
+2025-03-07 19:59:20,335 - interview-server - INFO - Client connected: FL0XfgE91bv3evVLAAAN
+2025-03-07 19:59:20,335 - interview-server - INFO - Created new interview session: d5b8dc76-7e92-4629-82bb-5005585d0724
+2025-03-07 19:59:20,336 - interview-server - INFO - Session created: d5b8dc76-7e92-4629-82bb-5005585d0724 for client: FL0XfgE91bv3evVLAAAN
+2025-03-07 19:59:20,337 - interview-server - INFO - Client FL0XfgE91bv3evVLAAAN joined session d5b8dc76-7e92-4629-82bb-5005585d0724
+2025-03-07 19:59:21,352 - interview-server - INFO - Session d5b8dc76-7e92-4629-82bb-5005585d0724 configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 19:59:49,109 - interview-server - INFO - Session d5b8dc76-7e92-4629-82bb-5005585d0724 state change: idle -> listening
+2025-03-07 19:59:49,110 - interview-server - INFO - Session d5b8dc76-7e92-4629-82bb-5005585d0724 now listening
+2025-03-07 20:02:33,307 - interview-server - INFO - Client disconnected: FL0XfgE91bv3evVLAAAN
+2025-03-07 20:02:33,307 - interview-server - INFO - Marking session d5b8dc76-7e92-4629-82bb-5005585d0724 as inactive
+2025-03-07 20:02:39,791 - interview-server - INFO - Interview State Manager initialized
+2025-03-07 20:02:39,793 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-07 20:02:39,794 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8081
+2025-03-07 20:02:39,794 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-07 20:02:39,794 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-07 20:02:43,850 - interview-server - INFO - Client connected: AAS3732cfvSK_lxSAAAB
+2025-03-07 20:02:43,850 - interview-server - INFO - Created new interview session: 90eb4743-c69a-4365-88a1-0123f678abb7
+2025-03-07 20:02:43,851 - interview-server - INFO - Session created: 90eb4743-c69a-4365-88a1-0123f678abb7 for client: AAS3732cfvSK_lxSAAAB
+2025-03-07 20:02:43,852 - interview-server - INFO - Client AAS3732cfvSK_lxSAAAB joined session 90eb4743-c69a-4365-88a1-0123f678abb7
+2025-03-07 20:02:44,857 - interview-server - INFO - Session 90eb4743-c69a-4365-88a1-0123f678abb7 configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 20:03:15,683 - interview-server - INFO - Client disconnected: AAS3732cfvSK_lxSAAAB
+2025-03-07 20:03:15,683 - interview-server - INFO - Marking session 90eb4743-c69a-4365-88a1-0123f678abb7 as inactive
+2025-03-07 20:03:24,215 - interview-server - INFO - Client connected: -vtK2pgvV02RhYGVAAAD
+2025-03-07 20:03:24,215 - interview-server - INFO - Created new interview session: a1e7cc8c-9a07-4119-a63a-d8ef2df0b4cb
+2025-03-07 20:03:24,215 - interview-server - INFO - Session created: a1e7cc8c-9a07-4119-a63a-d8ef2df0b4cb for client: -vtK2pgvV02RhYGVAAAD
+2025-03-07 20:03:24,217 - interview-server - INFO - Client -vtK2pgvV02RhYGVAAAD joined session a1e7cc8c-9a07-4119-a63a-d8ef2df0b4cb
+2025-03-07 20:03:25,219 - interview-server - INFO - Session a1e7cc8c-9a07-4119-a63a-d8ef2df0b4cb configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 20:03:28,436 - interview-server - INFO - Session a1e7cc8c-9a07-4119-a63a-d8ef2df0b4cb state change: idle -> listening
+2025-03-07 20:03:28,437 - interview-server - INFO - Session a1e7cc8c-9a07-4119-a63a-d8ef2df0b4cb now listening
+2025-03-07 20:11:44,814 - interview-server - INFO - Client disconnected: -vtK2pgvV02RhYGVAAAD
+2025-03-07 20:11:44,814 - interview-server - INFO - Marking session a1e7cc8c-9a07-4119-a63a-d8ef2df0b4cb as inactive
+2025-03-07 20:16:47,471 - interview-server - INFO - Client connected: Ge0ZZO9oYsPSaU_YAAAF
+2025-03-07 20:16:47,472 - interview-server - INFO - Created new interview session: ce273253-5a19-42d1-b10e-82262cfc5ff5
+2025-03-07 20:16:47,472 - interview-server - INFO - Session created: ce273253-5a19-42d1-b10e-82262cfc5ff5 for client: Ge0ZZO9oYsPSaU_YAAAF
+2025-03-07 20:16:47,473 - interview-server - INFO - Client Ge0ZZO9oYsPSaU_YAAAF joined session ce273253-5a19-42d1-b10e-82262cfc5ff5
+2025-03-07 20:16:48,485 - interview-server - INFO - Session ce273253-5a19-42d1-b10e-82262cfc5ff5 configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-07 20:17:36,340 - interview-server - INFO - Client disconnected: Ge0ZZO9oYsPSaU_YAAAF
+2025-03-07 20:17:36,340 - interview-server - INFO - Marking session ce273253-5a19-42d1-b10e-82262cfc5ff5 as inactive
+2025-03-07 20:21:11,154 - interview-server - INFO - Client connected: -DyDimI5I7oi9JQJAAAH
+2025-03-07 20:21:11,154 - interview-server - INFO - Created new interview session: fd52ce50-e40b-449d-934d-4699b763ed71
+2025-03-07 20:21:11,154 - interview-server - INFO - Session created: fd52ce50-e40b-449d-934d-4699b763ed71 for client: -DyDimI5I7oi9JQJAAAH
+2025-03-07 20:23:47,173 - interview-server - INFO - Client disconnected: -DyDimI5I7oi9JQJAAAH
+2025-03-07 20:23:47,174 - interview-server - INFO - Marking session fd52ce50-e40b-449d-934d-4699b763ed71 as inactive
+2025-03-07 20:24:00,694 - interview-server - INFO - Client connected: EXm0QiIrSsKap6nmAAAJ
+2025-03-07 20:24:00,694 - interview-server - INFO - Created new interview session: bc46942d-b104-4e00-99eb-8b220d60afe5
+2025-03-07 20:24:00,694 - interview-server - INFO - Session created: bc46942d-b104-4e00-99eb-8b220d60afe5 for client: EXm0QiIrSsKap6nmAAAJ
+2025-03-07 20:24:00,695 - interview-server - INFO - Client EXm0QiIrSsKap6nmAAAJ joined session bc46942d-b104-4e00-99eb-8b220d60afe5
