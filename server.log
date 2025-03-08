@@ -1030,3 +1030,51 @@ What are Alex's possible responses to...
 2025-03-08 02:16:53,877 - interview-server - INFO - Response sent to client ID: 7Pe7ZRAQ9gRvWIkIAAAD
 2025-03-08 02:17:08,280 - interview-server - INFO - Session 0634e9b0-362d-4cb0-9d64-2c6da4853c33 state change: responding -> waiting
 2025-03-08 02:17:08,280 - interview-server - INFO - Sending final state update to client 7Pe7ZRAQ9gRvWIkIAAAD for session 0634e9b0-362d-4cb0-9d64-2c6da4853c33
+2025-03-08 02:27:49,956 - interview-server - INFO - Interview State Manager initialized
+2025-03-08 02:27:49,956 - interview-server - INFO - web socket started
+2025-03-08 02:27:49,956 - interview-server - INFO - Started Socket.IO queue processing background task
+2025-03-08 02:27:49,958 - interview-server - INFO - Flask app and SocketIO initialized successfully
+2025-03-08 02:27:49,959 - interview-server - INFO - Starting WebSocket server on http://0.0.0.0:8081
+2025-03-08 02:27:49,959 - interview-server - INFO - Using LLM model: ./phi-model
+2025-03-08 02:27:49,959 - interview-server - INFO - Using TTS engine: gTTS
+2025-03-08 02:28:08,442 - interview-server - INFO - Client connected: 27KY7MMosgf6X1rLAAAB
+2025-03-08 02:28:08,442 - interview-server - INFO - Created new interview session: 12b2531f-a953-4476-be4a-9c99c0a8e85b
+2025-03-08 02:28:08,442 - interview-server - INFO - Session created: 12b2531f-a953-4476-be4a-9c99c0a8e85b for client: 27KY7MMosgf6X1rLAAAB
+2025-03-08 02:28:08,443 - interview-server - INFO - join session thing
+2025-03-08 02:28:08,444 - interview-server - INFO - Client 27KY7MMosgf6X1rLAAAB joined session 12b2531f-a953-4476-be4a-9c99c0a8e85b
+2025-03-08 02:28:09,459 - interview-server - INFO - Client configure session
+2025-03-08 02:28:09,460 - interview-server - INFO - Session 12b2531f-a953-4476-be4a-9c99c0a8e85b configured: {'position': 'Software Engineer', 'interviewer_type': 'professional', 'difficulty': 0.5}
+2025-03-08 02:28:15,505 - interview-server - INFO - start speaking
+2025-03-08 02:28:15,505 - interview-server - INFO - Session 12b2531f-a953-4476-be4a-9c99c0a8e85b state change: idle -> listening
+2025-03-08 02:28:15,505 - interview-server - INFO - Queued state_update event for room 12b2531f-a953-4476-be4a-9c99c0a8e85b or recipient None
+2025-03-08 02:28:15,505 - interview-server - INFO - Queued state_update event for room None or recipient 27KY7MMosgf6X1rLAAAB
+2025-03-08 02:28:15,505 - interview-server - INFO - Session 12b2531f-a953-4476-be4a-9c99c0a8e85b now listening
+2025-03-08 02:28:15,506 - interview-server - INFO - Emitted state_update event to room 12b2531f-a953-4476-be4a-9c99c0a8e85b
+2025-03-08 02:28:15,506 - interview-server - INFO - Emitted state_update event to recipient 27KY7MMosgf6X1rLAAAB
+2025-03-08 02:28:15,573 - interview-server - INFO - audio data
+2025-03-08 02:28:16,522 - interview-server - INFO - Received stop_speaking event for session 12b2531f-a953-4476-be4a-9c99c0a8e85b
+2025-03-08 02:28:16,522 - interview-server - INFO - Session 12b2531f-a953-4476-be4a-9c99c0a8e85b state change: listening -> processing
+2025-03-08 02:28:16,523 - interview-server - INFO - Queued state_update event for room 12b2531f-a953-4476-be4a-9c99c0a8e85b or recipient None
+2025-03-08 02:28:16,523 - interview-server - INFO - Queued state_update event for room None or recipient 27KY7MMosgf6X1rLAAAB
+2025-03-08 02:28:16,523 - interview-server - INFO - Session 12b2531f-a953-4476-be4a-9c99c0a8e85b now processing
+2025-03-08 02:28:16,524 - interview-server - INFO - Saved audio to data/audio/uploads\12b2531f-a953-4476-be4a-9c99c0a8e85b_0.wav
+2025-03-08 02:28:16,524 - interview-server - INFO - Emitted state_update event to room 12b2531f-a953-4476-be4a-9c99c0a8e85b
+2025-03-08 02:28:16,524 - interview-server - INFO - Starting process_audio_and_respond for session 12b2531f-a953-4476-be4a-9c99c0a8e85b
+2025-03-08 02:28:16,525 - interview-server - INFO - Session retrieved: 12b2531f-a953-4476-be4a-9c99c0a8e85b
+2025-03-08 02:28:16,525 - interview-server - INFO - Processing audio file at: data/audio/uploads\12b2531f-a953-4476-be4a-9c99c0a8e85b_0.wav
+2025-03-08 02:28:16,525 - interview-server - INFO - Audio file exists at data/audio/uploads\12b2531f-a953-4476-be4a-9c99c0a8e85b_0.wav
+2025-03-08 02:28:16,525 - interview-server - INFO - Starting audio transcription...
+2025-03-08 02:28:16,525 - interview-server - INFO - Loading Whisper model: base
+2025-03-08 02:28:17,528 - interview-server - INFO - Whisper model loaded successfully
+2025-03-08 02:28:17,531 - interview-server - INFO - Emitted state_update event to recipient 27KY7MMosgf6X1rLAAAB
+2025-03-08 02:28:18,283 - interview-server - INFO - Transcription completed in 0.75 seconds
+2025-03-08 02:28:18,283 - interview-server - INFO - Transcription for session 12b2531f-a953-4476-be4a-9c99c0a8e85b: Hello, I'm interested in a flat-planned and new role-in position. Could you tell me more about the role?
+2025-03-08 02:28:18,283 - interview-server - INFO - Added user message to conversation history
+2025-03-08 02:28:18,285 - interview-server - ERROR - Error in process_audio_and_respond: cannot import name 'app' from 'server' (D:\vr-interview-server\server.py)
+2025-03-08 02:28:18,285 - interview-server - INFO - Session 12b2531f-a953-4476-be4a-9c99c0a8e85b state change: processing -> error
+2025-03-08 02:28:18,285 - interview-server - INFO - Queued state_update event for room 12b2531f-a953-4476-be4a-9c99c0a8e85b or recipient None
+2025-03-08 02:28:18,285 - interview-server - INFO - Queued state_update event for room None or recipient 27KY7MMosgf6X1rLAAAB
+2025-03-08 02:28:18,285 - interview-server - INFO - Queued error event for room 12b2531f-a953-4476-be4a-9c99c0a8e85b or recipient None
+2025-03-08 02:28:18,285 - interview-server - INFO - Emitted state_update event to room 12b2531f-a953-4476-be4a-9c99c0a8e85b
+2025-03-08 02:28:18,285 - interview-server - INFO - Emitted state_update event to recipient 27KY7MMosgf6X1rLAAAB
+2025-03-08 02:28:18,286 - interview-server - INFO - Emitted error event to room 12b2531f-a953-4476-be4a-9c99c0a8e85b

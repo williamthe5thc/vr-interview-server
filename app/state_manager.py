@@ -138,10 +138,32 @@ class InterviewStateManager:
         session.state = new_state
         session.last_activity = time.time()
         
-        # Send state update to client
+        # Send state update to client - using the queue_emit function for thread safety
         if hasattr(self, 'socketio') and self.socketio:
             try:
-                # Send to both session room and client ID for reliability
+                # Import here to avoid circular imports
+                from app.websocket import queue_emit
+                
+                # Queue the state update for emission by the main thread
+                queue_emit('state_update', {
+                    'session_id': session_id,
+                    'state': new_state,
+                    'turn': session.turn_index,
+                    'previous_state': old_state
+                }, room=session_id)
+                
+                # Also emit directly to the client if available
+                if session.client_id:
+                    queue_emit('state_update', {
+                        'session_id': session_id,
+                        'state': new_state,
+                        'turn': session.turn_index,
+                        'previous_state': old_state
+                    }, to=session.client_id)
+                
+            except ImportError:
+                # If queue_emit is not available (e.g., during initialization),
+                # fall back to direct emit
                 self.socketio.emit('state_update', {
                     'session_id': session_id,
                     'state': new_state,
@@ -149,14 +171,8 @@ class InterviewStateManager:
                     'previous_state': old_state
                 }, room=session_id)
                 
-                # Also emit directly to the client
-                if session.client_id:
-                    self.socketio.emit('state_update', {
-                        'session_id': session_id,
-                        'state': new_state,
-                        'turn': session.turn_index,
-                        'previous_state': old_state
-                    }, to=session.client_id)
+                logger.warning("Using direct emit for state update (queue_emit unavailable)")
+                
             except Exception as e:
                 logger.error(f"Error sending state update: {e}")
         

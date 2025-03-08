@@ -8,6 +8,8 @@ import uuid
 import base64
 import logging
 import threading
+import queue
+import json
 from flask import request, current_app
 from flask_socketio import emit, join_room, leave_room
 import eventlet
@@ -17,15 +19,25 @@ from app.state_manager import InterviewStateManager
 from app.interview_session import InterviewSession
 from services.speech_processing import transcribe_audio, generate_speech
 from services.llm_service import generate_llm_response
+from app import create_app
 
 # Initialize state manager
 state_manager = InterviewStateManager()
 logger = logging.getLogger("interview-server")
 logger.info("web socket started")
+
+# Create a queue for thread-safe socket.io operations
+socketio_queue = queue.Queue()
+socketio_instance = None
+
 def register_events(socketio):
     """Register WebSocket event handlers with the SocketIO instance."""
+    global socketio_instance
+    socketio_instance = socketio
     state_manager.set_socketio(socketio)
 
+    # Start the background task to process queued socket.io operations
+    socketio.start_background_task(process_socketio_queue)
 
     @socketio.on('connect')
     def handle_connect():
@@ -250,6 +262,73 @@ def register_events(socketio):
             'turn': 0
         })
 
+def queue_emit(event, data, room=None, to=None):
+    """
+    Queue an emit operation to be processed by the main eventlet thread.
+    This makes Socket.IO operations thread-safe.
+    """
+    socketio_queue.put((event, data, room, to))
+    logger.info(f"Queued {event} event for room {room} or recipient {to}")
+
+def process_socketio_queue():
+    """
+    Process queued Socket.IO operations in the main eventlet thread.
+    This function runs as a background task.
+    """
+    logger.info("Started Socket.IO queue processing background task")
+    while True:
+        try:
+            # Get an item from the queue (blocks until an item is available)
+            event, data, room, to = socketio_queue.get(timeout=1.0)
+            
+            # Emit the event
+            if room:
+                socketio_instance.emit(event, data, room=room)
+                logger.info(f"Emitted {event} event to room {room}")
+            elif to:
+                socketio_instance.emit(event, data, to=to)
+                logger.info(f"Emitted {event} event to recipient {to}")
+            else:
+                socketio_instance.emit(event, data)
+                logger.info(f"Emitted {event} event globally")
+                
+            # Mark the task as done
+            socketio_queue.task_done()
+        except queue.Empty:
+            # If the queue is empty (timeout), just continue
+            pass
+        except Exception as e:
+            logger.error(f"Error processing socketio queue: {e}")
+        
+        # Give eventlet a chance to switch
+        eventlet.sleep(0)
+
+def load_config():
+    """Load configuration from config.json - mirrors function in server.py"""
+    try:
+        with open("config.json", "r") as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Error loading config: {e}")
+        logger.info("Using default configuration")
+        return {
+            "server": {
+                "host": "0.0.0.0",
+                "port": 8080,
+                "debug": True
+            },
+            "llm": {
+                "model_path": "./phi-model",
+                "temperature": 0.7,
+                "max_tokens": 75
+            },
+            "audio": {
+                "tts_engine": "gTTS",
+                "alltalk_path": "D:\\AllTalk",
+                "whisper_model": "base"
+            }
+        }
+
 def process_audio_and_respond(session_id, audio_path):
     """
     Process audio input and generate interviewer response.
@@ -258,13 +337,6 @@ def process_audio_and_respond(session_id, audio_path):
     logger.info(f"Starting process_audio_and_respond for session {session_id}")
     
     try:
-        # Get socketio from state manager
-        socketio = state_manager.socketio
-        if not socketio:
-            logger.error("SocketIO instance not available")
-            return
-        logger.info("SocketIO instance obtained from state manager")
-        
         session = state_manager.get_session(session_id)
         if not session:
             logger.error(f"Session {session_id} not found during processing")
@@ -277,7 +349,7 @@ def process_audio_and_respond(session_id, audio_path):
         if not os.path.exists(audio_path):
             logger.error(f"Audio file not found: {audio_path}")
             state_manager.update_session_state(session_id, 'error')
-            socketio.emit('error', {'message': 'Audio file not found'}, room=session_id)
+            queue_emit('error', {'message': 'Audio file not found'}, room=session_id)
             return
         logger.info(f"Audio file exists at {audio_path}")
         
@@ -287,7 +359,7 @@ def process_audio_and_respond(session_id, audio_path):
         if not transcription:
             logger.error(f"Failed to transcribe audio for session {session_id}")
             state_manager.update_session_state(session_id, 'error')
-            socketio.emit('error', {'message': 'Failed to transcribe audio'}, room=session_id)
+            queue_emit('error', {'message': 'Failed to transcribe audio'}, room=session_id)
             return
         
         logger.info(f"Transcription for session {session_id}: {transcription}")
@@ -296,31 +368,14 @@ def process_audio_and_respond(session_id, audio_path):
         session.add_message("user", transcription)
         logger.info("Added user message to conversation history")
         
-        # Get the Flask app (needed to access the config)
-        from flask import current_app
-        
-        # Create an application context
-        # This is the critical fix - we need an app context in this thread
-        from flask import Flask
-        from app import create_app
-        
-        # Load the configuration for the app
-        import json
-        try:
-            with open("config.json", "r") as f:
-                config = json.load(f)
-        except Exception as e:
-            logger.error(f"Error loading config: {e}")
-            config = {}
-            
-        # Create the app with loaded config
+        # Load config and create a fresh app context - FIX FOR CIRCULAR IMPORT ISSUE
+        config = load_config()
         app, _ = create_app(config)
+        
+        # Create application context properly
         with app.app_context():
             # Now we're inside an application context
             logger.info("Generating LLM response...")
-            
-            # Get app config
-            config = current_app.config.get('APP_CONFIG', {})
             
             # Get interviewer personality prompt from config
             interviewer_type = session.interviewer_type
@@ -335,7 +390,7 @@ def process_audio_and_respond(session_id, audio_path):
             )
             
             # Format conversation history for LLM
-            from services.llm_service import format_conversation_for_llm, generate_llm_response
+            from services.llm_service import format_conversation_for_llm
             formatted_history = format_conversation_for_llm(session.conversation_history)
             
             # Generate response from LLM
@@ -351,7 +406,7 @@ def process_audio_and_respond(session_id, audio_path):
             if not response_text:
                 logger.error(f"Failed to generate LLM response for session {session_id}")
                 state_manager.update_session_state(session_id, 'error')
-                socketio.emit('error', {'message': 'Failed to generate response'}, room=session_id)
+                queue_emit('error', {'message': 'Failed to generate response'}, room=session_id)
                 return
                 
             logger.info(f"LLM response generated: {response_text}")
@@ -361,7 +416,7 @@ def process_audio_and_respond(session_id, audio_path):
             
             # Generate speech from text
             response_audio_path = os.path.join(
-                current_app.config['RESPONSE_FOLDER'], 
+                app.config['RESPONSE_FOLDER'], 
                 f"{session_id}_{session.turn_index}.wav"
             )
             
@@ -376,21 +431,24 @@ def process_audio_and_respond(session_id, audio_path):
             # This will be requested via HTTP
             audio_url = f"/responses/{session_id}_{session.turn_index}.wav"
             
-            # Send response to client
+            # Send response to client using queue_emit for thread safety
             logger.info(f"Sending response to client {session.client_id}: {response_text[:50]}...")
-            try:
-                # Send directly to the client using the client ID
-                socketio.emit('response_ready', {
+            
+            # Try multiple emission methods for reliability
+            # 1. Emit to room
+            queue_emit('response_ready', {
+                'session_id': session_id,
+                'text': response_text,
+                'audio_url': audio_url
+            }, room=session_id)
+            
+            # 2. Emit directly to client ID
+            if session.client_id:
+                queue_emit('response_ready', {
                     'session_id': session_id,
                     'text': response_text,
                     'audio_url': audio_url
                 }, to=session.client_id)
-                
-                # Log the emission
-                logger.info(f"Response sent to client ID: {session.client_id}")
-                
-            except Exception as e:
-                logger.error(f"Error sending response to client: {e}")
             
             # Wait a bit to simulate audio playback (client will notify when done in real impl)
             # In a full implementation, the client would signal when audio playback is complete
@@ -401,24 +459,28 @@ def process_audio_and_respond(session_id, audio_path):
             session.turn_index += 1
             state_manager.update_session_state(session_id, 'waiting')
             
-            # Explicitly send a final state update to ensure the client receives it
+            # Send final state update explicitly
             logger.info(f"Sending final state update to client {session.client_id} for session {session_id}")
-            # Use eventlet to delay slightly and ensure the message goes through
-            eventlet.spawn_after(1, socketio.emit, 'state_update', {
-                'session_id': session_id,
-                'state': 'waiting',
-                'turn': session.turn_index
-            }, to=session.client_id)
             
-            # Double check with a broadcast to the room as well
-            socketio.emit('state_update', {
+            # Use multiple approaches to ensure the state update gets through
+            # 1. Room-based approach
+            queue_emit('state_update', {
                 'session_id': session_id,
                 'state': 'waiting',
                 'turn': session.turn_index,
-                'broadcast': True  # Add this to make it easily identifiable in logs
-            })
+                'previous_state': 'responding'
+            }, room=session_id)
+            
+            # 2. Direct to client approach
+            if session.client_id:
+                queue_emit('state_update', {
+                    'session_id': session_id,
+                    'state': 'waiting',
+                    'turn': session.turn_index,
+                    'previous_state': 'responding'
+                }, to=session.client_id)
             
     except Exception as e:
         logger.error(f"Error in process_audio_and_respond: {e}")
         state_manager.update_session_state(session_id, 'error')
-        socketio.emit('error', {'message': f'Processing error: {str(e)}'}, room=session_id)
+        queue_emit('error', {'message': f'Processing error: {str(e)}'}, room=session_id)
