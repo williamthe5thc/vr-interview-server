@@ -45,18 +45,24 @@ def _get_model_and_tokenizer(model_path):
             _model = AutoModelForCausalLM.from_pretrained(
                 model_path,
                 torch_dtype="auto",
-                trust_remote_code=True,
-                device_map="auto"  # Will use CUDA if available
+                trust_remote_code=True
             )
+            
+            # Check if CUDA is available
+            if torch.cuda.is_available():
+                logger.info("CUDA is available, using GPU")
+                device = "cuda"
+                _model = _model.to(device)
+            else:
+                logger.warning("CUDA not available, using CPU (this will be slow)")
+                device = "cpu"
             
             logger.info(f"LLM model loaded successfully: {model_path}")
             
             # Log device information
-            if torch.cuda.is_available():
+            if device == "cuda":
                 device_name = torch.cuda.get_device_name(0)
                 logger.info(f"Using GPU: {device_name}")
-            else:
-                logger.warning("CUDA not available, using CPU (this will be slow)")
                 
         except Exception as e:
             logger.error(f"Error loading LLM model: {e}")
@@ -85,14 +91,31 @@ def _build_prompt(user_input, conversation_history, personality_prompt, position
     elif difficulty < 0.4:
         difficulty_modifier = "\nBe supportive and helpful, providing guidance if the candidate struggles."
     
-    # Format the prompt (for Phi-2 style)
-    prompt = f"""<s>[INST] {personality_prompt}
-You're conducting an interview for a {position} position.{difficulty_modifier}
+    # Format the prompt (simplified format that works better with phi models)
+    prompt = f"""SYSTEM: You are a professional job interviewer named Alex. Follow these rules strictly:
+1. Only respond as the interviewer Alex
+2. Keep responses to 1-2 sentences maximum
+3. Ask only ONE question at a time
+4. NEVER answer your own questions
+5. NEVER role-play as the candidate
+6. NEVER use phrases like "Can you tell me more" - be specific
+
+{personality_prompt}
+
+You're interviewing someone for a {position} position.{difficulty_modifier}
+
+FORMAT YOUR RESPONSE EXACTLY LIKE THIS:
+"[Your direct response to the candidate's statement, then ask a specific follow-up question]"
 
 Previous conversation:
 {conversation_history}
 
-Respond as the interviewer: [/INST]"""
+Candidate: {user_input}
+
+Interviewer Alex: """
+    
+    # Log the prompt for debugging
+    logger.info(f"Generated prompt:\n{prompt}")
     
     return prompt
 
@@ -220,6 +243,78 @@ def generate_llm_response(user_input, conversation_history, personality_prompt,
         # Log generation time
         elapsed_time = time.time() - start_time
         logger.info(f"LLM response generated in {elapsed_time:.2f} seconds")
+        
+        # Clean and validate the LLM response 
+        def clean_response(text):
+            # Strip whitespace
+            text = text.strip()
+            
+            # Remove control tokens
+            for token in ["[s]", "[END]", "[INST]", "[/INST]", "ASSISTANT:", "SYSTEM:"]:
+                text = text.replace(token, "")
+                
+            # Remove role labels
+            for role in ["Candidate:", "Interviewer:", "Interviewer Alex:", "Alex:"]:
+                text = text.replace(role, "")
+            
+            # Strip whitespace again after removals
+            text = text.strip()
+            
+            # Remove any text that looks like the candidate speaking
+            if "\nCandidate:" in text:
+                text = text.split("\nCandidate:")[0].strip()
+            
+            # Check for common patterns indicating a candidate response
+            candidate_patterns = [
+                "Thank you for sharing", 
+                "Thank you for providing",
+                "That sounds interesting",
+                "I'm interested in learning more",
+                "Can you tell me more about"
+            ]
+            
+            # If it contains both a candidate pattern AND a separate interviewer response, split it
+            for pattern in candidate_patterns:
+                if pattern in text and "\n" in text:
+                    # Try to extract just the interviewer part
+                    parts = text.split("\n")
+                    for part in parts:
+                        if not any(p in part for p in candidate_patterns):
+                            text = part.strip()
+                            break
+            
+            # If response starts with typical candidate response, replace it
+            for pattern in candidate_patterns:
+                if text.startswith(pattern):
+                    return "What specific programming languages and frameworks are you most comfortable working with?"
+            
+            # Remove any numbered questions (1., 2., etc.) and just keep the first one
+            if "\n1." in text and "\n2." in text:
+                try:
+                    # Get the introduction text if any
+                    intro = text.split("\n1.")[0].strip()
+                    # Get just the first question
+                    question = text.split("\n1.")[1].split("\n2.")[0].strip()
+                    # Combine them
+                    if intro:
+                        text = f"{intro} {question}"
+                    else:
+                        text = question
+                except:
+                    # If parsing fails, return a simple question
+                    return "What experience do you have with software development?"
+            
+            # Final validation - if too short or empty, provide a fallback
+            if not text or len(text) < 10:
+                return "What kind of projects have you worked on that demonstrate your technical skills?"
+                
+            return text
+        
+        # Apply the cleaning
+        response_text = clean_response(response_text)
+        
+        # Log the final cleaned response
+        logger.info(f"Cleaned response: {response_text}")
         
         # Cache the response
         _add_to_cache(cache_key, response_text)

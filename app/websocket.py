@@ -84,6 +84,8 @@ def register_events(socketio):
         
         # Join the room for this session
         join_room(session_id)
+        # Also join a room with the client ID
+        join_room(client_id)
         logger.info(f"Client {client_id} joined session {session_id}")
         
         # Update client ID
@@ -299,7 +301,20 @@ def process_audio_and_respond(session_id, audio_path):
         
         # Create an application context
         # This is the critical fix - we need an app context in this thread
-        from server import app  # Import the Flask app instance
+        from flask import Flask
+        from app import create_app
+        
+        # Load the configuration for the app
+        import json
+        try:
+            with open("config.json", "r") as f:
+                config = json.load(f)
+        except Exception as e:
+            logger.error(f"Error loading config: {e}")
+            config = {}
+            
+        # Create the app with loaded config
+        app, _ = create_app(config)
         with app.app_context():
             # Now we're inside an application context
             logger.info("Generating LLM response...")
@@ -312,6 +327,7 @@ def process_audio_and_respond(session_id, audio_path):
             position = session.position
             difficulty = session.difficulty
             
+            logger.info(f"Interview type is {interviewer_type}")
             interviewer_prompts = config.get('interview', {}).get('interviewer_types', {})
             personality_prompt = interviewer_prompts.get(
                 interviewer_type, 
@@ -361,11 +377,20 @@ def process_audio_and_respond(session_id, audio_path):
             audio_url = f"/responses/{session_id}_{session.turn_index}.wav"
             
             # Send response to client
-            socketio.emit('response_ready', {
-                'session_id': session_id,
-                'text': response_text,
-                'audio_url': audio_url
-            }, room=session_id)
+            logger.info(f"Sending response to client {session.client_id}: {response_text[:50]}...")
+            try:
+                # Send directly to the client using the client ID
+                socketio.emit('response_ready', {
+                    'session_id': session_id,
+                    'text': response_text,
+                    'audio_url': audio_url
+                }, to=session.client_id)
+                
+                # Log the emission
+                logger.info(f"Response sent to client ID: {session.client_id}")
+                
+            except Exception as e:
+                logger.error(f"Error sending response to client: {e}")
             
             # Wait a bit to simulate audio playback (client will notify when done in real impl)
             # In a full implementation, the client would signal when audio playback is complete
@@ -375,6 +400,23 @@ def process_audio_and_respond(session_id, audio_path):
             # Update turn index and move to waiting state
             session.turn_index += 1
             state_manager.update_session_state(session_id, 'waiting')
+            
+            # Explicitly send a final state update to ensure the client receives it
+            logger.info(f"Sending final state update to client {session.client_id} for session {session_id}")
+            # Use eventlet to delay slightly and ensure the message goes through
+            eventlet.spawn_after(1, socketio.emit, 'state_update', {
+                'session_id': session_id,
+                'state': 'waiting',
+                'turn': session.turn_index
+            }, to=session.client_id)
+            
+            # Double check with a broadcast to the room as well
+            socketio.emit('state_update', {
+                'session_id': session_id,
+                'state': 'waiting',
+                'turn': session.turn_index,
+                'broadcast': True  # Add this to make it easily identifiable in logs
+            })
             
     except Exception as e:
         logger.error(f"Error in process_audio_and_respond: {e}")

@@ -10,6 +10,7 @@ import os
 import base64
 import wave
 import numpy as np
+import eventlet
 from threading import Event, Lock
 
 # Create Socket.IO client
@@ -22,6 +23,53 @@ current_sample = 1
 state_lock = Lock()
 audio_sent_event = Event()
 stop_speaking_sent_event = Event()
+
+# Create Socket.IO client
+sio = socketio.Client(
+    logger=True,
+    reconnection=True,
+    reconnection_attempts=10,
+    reconnection_delay=1,
+    reconnection_delay_max=5,
+    randomization_factor=0.5
+)
+
+# Add polling for the server state
+def poll_server_state(poll_interval=2.0):
+    """
+    Periodically poll the server for the current state.
+    This is a reliability backup to handle missed socket events.
+    
+    Args:
+        poll_interval (float): Polling interval in seconds
+    """
+    global session_id, current_state
+    
+    # Only poll if there's an active session
+    if not session_id:
+        return
+    
+    try:
+        # Request current state from server
+        sio.emit('get_state', {'session_id': session_id}, callback=on_state_received)
+        # Schedule next poll
+        eventlet.spawn_after(poll_interval, poll_server_state, poll_interval)
+    except Exception as e:
+        print(f"Error polling server state: {e}")
+
+# Callback for state polling
+def on_state_received(data):
+    global current_state
+    if data and 'state' in data:
+        with state_lock:
+            # Only update if the state is different
+            if current_state != data['state']:
+                print(f"\n[POLL] State updated: {current_state} -> {data['state']}, Turn: {data.get('turn', 0)}")
+                current_state = data['state']
+                
+                # Print a marker when waiting state is reached
+                if data['state'] == "waiting":
+                    print("\n=== READY FOR NEXT QUESTION ===\n")
 
 # Event handlers
 @sio.event
@@ -60,10 +108,14 @@ def on_state_update(data):
     global current_state
     state = data['state']
     turn = data.get('turn', 0)
-    print(f"State updated: {state}, Turn: {turn}")
+    previous = data.get('previous_state', '')
+    print(f"State updated: {previous} -> {state}, Turn: {turn}")
     
     with state_lock:
         current_state = state
+        # Print an obvious marker when waiting state is reached
+        if state == "waiting":
+            print("\n=== READY FOR NEXT QUESTION ===\n")
 
 @sio.on('listening_started')
 def on_listening_started(data):
@@ -81,16 +133,28 @@ def on_processing_started(data):
 
 @sio.on('response_ready')
 def on_response_ready(data):
+    global current_state
     response_text = data['text']
     audio_url = data.get('audio_url', '')
-    print(f"\nInterviewer response: {response_text}")
+    print(f"\n========== INTERVIEWER RESPONSE ==========\n{response_text}\n=========================================\n")
     print(f"Audio URL: {audio_url}")
+    
+    # Update the current state to reflect response received
+    with state_lock:
+        # If still in processing or responding state, update it
+        if current_state in ["processing", "responding"]:
+            current_state = "waiting"
+            print("\n=== READY FOR NEXT QUESTION ===\n")
     
     print("\nPress Enter to continue the conversation...")
 
 @sio.on('error')
 def on_error(data):
     print(f"Error from server: {data['message']}")
+
+@sio.event
+def message(data):
+    print(f"\n[DEBUG] Received message: {data}")
 
 def join_session():
     """Join the created session."""
@@ -137,6 +201,38 @@ def get_current_state():
     """Get the current state with thread safety."""
     with state_lock:
         return current_state
+
+def wait_for_state_change(target_states, timeout=60):
+    """
+    Wait for the state to change to one of the target states.
+    
+    Args:
+        target_states (list): List of possible target states
+        timeout (int): Maximum time to wait in seconds
+        
+    Returns:
+        bool: True if state changed to target, False if timed out
+    """
+    start_time = time.time()
+    check_interval = 0.5  # Check every half second
+    print_interval = 5.0  # Print status every 5 seconds
+    last_print_time = 0
+    
+    while time.time() - start_time < timeout:
+        current = get_current_state()
+        if current in target_states:
+            print(f"State changed to {current}")
+            return True
+        
+        # Only print status message every few seconds to avoid flooding console
+        if time.time() - last_print_time >= print_interval:
+            print(f"Waiting for state to change to {target_states}, currently {current}... ({int(time.time() - start_time)}s)")
+            last_print_time = time.time()
+            
+        time.sleep(check_interval)
+    
+    print(f"Timed out waiting for state to change to {target_states}")
+    return False
 
 def start_speaking():
     """Start the speaking process."""
@@ -298,8 +394,20 @@ def main():
                 # Start speaking if in appropriate state
                 if state in ["idle", "waiting"]:
                     start_speaking()
+                    
+                    # Wait for processing to complete and get a response
+                    print("\nWaiting for server response...")
+                    success = wait_for_state_change(["waiting", "error"], timeout=180)
+                    
+                    if not success:
+                        print("TIMEOUT: Server didn't respond in time. You can try again or quit.")
+                    
+                    # Get the new state after waiting
+                    state = get_current_state()
+                    print(f"State after processing: {state}")
                 else:
                     print(f"Waiting for server (current state: {state})...")
+                    wait_for_state_change(["idle", "waiting", "error"], timeout=60)
                 
                 # Wait a bit to avoid UI clutter
                 time.sleep(1)

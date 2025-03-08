@@ -141,12 +141,22 @@ class InterviewStateManager:
         # Send state update to client
         if hasattr(self, 'socketio') and self.socketio:
             try:
+                # Send to both session room and client ID for reliability
                 self.socketio.emit('state_update', {
                     'session_id': session_id,
                     'state': new_state,
                     'turn': session.turn_index,
                     'previous_state': old_state
                 }, room=session_id)
+                
+                # Also emit directly to the client
+                if session.client_id:
+                    self.socketio.emit('state_update', {
+                        'session_id': session_id,
+                        'state': new_state,
+                        'turn': session.turn_index,
+                        'previous_state': old_state
+                    }, to=session.client_id)
             except Exception as e:
                 logger.error(f"Error sending state update: {e}")
         
