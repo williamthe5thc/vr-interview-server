@@ -21,7 +21,7 @@ from services.llm_service import generate_llm_response
 # Initialize state manager
 state_manager = InterviewStateManager()
 logger = logging.getLogger("interview-server")
-
+logger.info("web socket started")
 def register_events(socketio):
     """Register WebSocket event handlers with the SocketIO instance."""
     state_manager.set_socketio(socketio)
@@ -72,7 +72,7 @@ def register_events(socketio):
         """Handle client joining a specific session."""
         session_id = data.get('session_id')
         client_id = request.sid
-        
+        logger.info(f"join session thing")
         if not session_id:
             emit('error', {'message': 'Session ID required'})
             return
@@ -101,7 +101,8 @@ def register_events(socketio):
         """Configure session parameters."""
         session_id = data.get('session_id')
         config = data.get('config', {})
-        
+        logger.info(f"Client configure session")
+
         if not session_id:
             emit('error', {'message': 'Session ID required'})
             return
@@ -128,7 +129,8 @@ def register_events(socketio):
     def handle_start_speaking(data):
         """Handle when user starts speaking."""
         session_id = data.get('session_id')
-        
+        logger.info(f"start speaking")
+
         if not session_id:
             emit('error', {'message': 'Session ID required'})
             return
@@ -155,6 +157,7 @@ def register_events(socketio):
     @socketio.on('audio_data')
     def handle_audio_data(data):
         """Handle incoming audio data chunks."""
+        logger.info(f"audio data")
         session_id = data.get('session_id')
         audio_chunk = data.get('audio')  # Base64 encoded audio
         
@@ -250,7 +253,8 @@ def process_audio_and_respond(session_id, audio_path):
     Process audio input and generate interviewer response.
     This function runs in a separate thread.
     """
-    
+    logger.info(f"process audio")
+
     try:
         logger.info(f"Starting process_audio_and_respond for session {session_id}")
         
