@@ -22,6 +22,8 @@ current_sample = 1
 state_lock = Lock()
 audio_sent_event = Event()
 stop_speaking_sent_event = Event()
+response_received_event = Event()
+connected_event = Event()  # New event to track connection status
 
 # Event handlers
 @sio.event
@@ -30,10 +32,12 @@ def connect():
     global current_state
     with state_lock:
         current_state = "connected"
+    connected_event.set()  # Signal that connection is established
 
 @sio.event
 def connect_error(data):
     print(f"Connection error: {data}")
+    connected_event.clear()
 
 @sio.event
 def disconnect():
@@ -41,12 +45,18 @@ def disconnect():
     global current_state
     with state_lock:
         current_state = "disconnected"
+    connected_event.clear()
 
 @sio.on('session_created')
 def on_session_created(data):
     global session_id
     session_id = data['session_id']
     print(f"Session created: {session_id}")
+    
+    # Wait until we're fully connected before joining
+    if not connected_event.is_set():
+        print("Waiting for connection to establish before joining session...")
+        connected_event.wait(timeout=5)
     
     # Join the session
     join_session()
@@ -81,10 +91,20 @@ def on_processing_started(data):
 
 @sio.on('response_ready')
 def on_response_ready(data):
+    global current_state
     response_text = data['text']
     audio_url = data.get('audio_url', '')
-    print(f"\nInterviewer response: {response_text}")
+    print(f"\n========== INTERVIEWER RESPONSE ==========\n{response_text}\n=========================================\n")
     print(f"Audio URL: {audio_url}")
+    
+    # Signal that we received a response
+    response_received_event.set()
+    
+    # Update the current state if it's still in processing
+    with state_lock:
+        if current_state == "processing":
+            current_state = "waiting"
+            print("Updated state to 'waiting' after receiving response")
     
     print("\nPress Enter to continue the conversation...")
 
@@ -101,6 +121,11 @@ def join_session():
         return
     
     try:
+        # Make sure we're connected
+        if not connected_event.is_set() or not sio.connected:
+            print("Not connected to server, cannot join session")
+            return
+            
         print(f"Joining session: {session_id}")
         sio.emit('join_session', {'session_id': session_id})
         time.sleep(1)  # Give server time to process
@@ -138,6 +163,47 @@ def get_current_state():
     with state_lock:
         return current_state
 
+def wait_for_state_change(target_states, timeout=30):
+    """
+    Wait for the state to change to one of the target states.
+    
+    Args:
+        target_states (list): List of target states to wait for
+        timeout (int): Maximum time to wait in seconds
+        
+    Returns:
+        bool: True if state changed to target, False if timed out
+    """
+    start_time = time.time()
+    check_interval = 0.5  # Check every half second
+    
+    # For waiting and responding states, also check response_received_event
+    if "waiting" in target_states or "responding" in target_states:
+        if response_received_event.is_set():
+            # If response already received, consider it success
+            print("Response already received, no need to wait for state change")
+            return True
+    
+    while time.time() - start_time < timeout:
+        current = get_current_state()
+        if current in target_states:
+            print(f"State changed to {current}")
+            return True
+        
+        # Check if response was received for waiting or responding targets
+        if ("waiting" in target_states or "responding" in target_states) and response_received_event.is_set():
+            print("Response received while waiting for state change")
+            return True
+        
+        # Print status message every second
+        if int(time.time() - start_time) % 2 == 0:  # Only print every 2 seconds
+            print(f"Waiting for state to change to {target_states}, currently {current}... ({int(time.time() - start_time)}s)")
+        
+        time.sleep(check_interval)
+    
+    print(f"Timed out waiting for state to change to {target_states}")
+    return False
+
 def start_speaking():
     """Start the speaking process."""
     global session_id
@@ -156,6 +222,7 @@ def start_speaking():
         # Reset the events
         audio_sent_event.clear()
         stop_speaking_sent_event.clear()
+        response_received_event.clear()
         
         sio.emit('start_speaking', {'session_id': session_id})
         
@@ -275,6 +342,10 @@ def main():
         print("Connecting to server...")
         sio.connect(args.url, wait_timeout=10)
         
+        # Wait until connected before proceeding
+        if not connected_event.wait(timeout=5):
+            print("Warning: Connection not confirmed, but continuing anyway...")
+        
         # Give some time for initial setup
         time.sleep(2)
         
@@ -297,9 +368,14 @@ def main():
                 
                 # Start speaking if in appropriate state
                 if state in ["idle", "waiting"]:
-                    start_speaking()
+                    if start_speaking():
+                        # Wait for processing and response
+                        wait_for_state_change(["processing"], timeout=5)  # Wait for processing state
+                        wait_for_state_change(["waiting", "responding"], timeout=60)  # Wait for response
                 else:
-                    print(f"Waiting for server (current state: {state})...")
+                    print(f"Waiting for server to be ready (current state: {state})...")
+                    # Wait for the server to be ready
+                    wait_for_state_change(["idle", "waiting"], timeout=30)
                 
                 # Wait a bit to avoid UI clutter
                 time.sleep(1)

@@ -248,6 +248,28 @@ def register_events(socketio):
             'turn': 0
         })
 
+def get_app():
+    """
+    Function to get the Flask app instance from the main module.
+    This avoids circular imports.
+    """
+    try:
+        from flask import current_app
+        return current_app._get_current_object()
+    except RuntimeError:
+        # If we're outside the application context
+        import sys
+        if 'server' in sys.modules:
+            return sys.modules['server'].app
+        else:
+            # If all else fails, import directly
+            from app import create_app
+            import json
+            with open("config.json", "r") as f:
+                config = json.load(f)
+            app, _ = create_app(config)
+            return app
+
 def process_audio_and_respond(session_id, audio_path):
     """
     Process audio input and generate interviewer response.
@@ -255,51 +277,54 @@ def process_audio_and_respond(session_id, audio_path):
     """
     logger.info(f"Starting process_audio_and_respond for session {session_id}")
     
-    try:
-        # Get socketio from state manager
-        socketio = state_manager.socketio
-        if not socketio:
-            logger.error("SocketIO instance not available")
-            return
-        logger.info("SocketIO instance obtained from state manager")
+    # Get the Flask app
+    app = get_app()
+    
+    # Create an application context
+    with app.app_context():
+        try:
+            # Get socketio from state manager
+            socketio = state_manager.socketio
+            if not socketio:
+                logger.error("SocketIO instance not available")
+                return
+            logger.info("SocketIO instance obtained from state manager")
+            
+            session = state_manager.get_session(session_id)
+            if not session:
+                logger.error(f"Session {session_id} not found during processing")
+                return
+            logger.info(f"Session retrieved: {session_id}")
+            
+            logger.info(f"Processing audio file at: {audio_path}")
+            
+            # Check if audio file exists
+            if not os.path.exists(audio_path):
+                logger.error(f"Audio file not found: {audio_path}")
+                state_manager.update_session_state(session_id, 'error')
+                socketio.emit('error', {'message': 'Audio file not found'}, room=session_id)
+                return
+            logger.info(f"Audio file exists at {audio_path}")
+            
+            # Transcribe audio
+            logger.info("Starting audio transcription...")
+            transcription = transcribe_audio(audio_path)
+            if not transcription:
+                logger.error(f"Failed to transcribe audio for session {session_id}")
+                state_manager.update_session_state(session_id, 'error')
+                socketio.emit('error', {'message': 'Failed to transcribe audio'}, room=session_id)
+                return
+            
+            logger.info(f"Transcription for session {session_id}: {transcription}")
+            
+            # Add user message to conversation history
+            session.add_message("user", transcription)
+            logger.info("Added user message to conversation history")
         
-        session = state_manager.get_session(session_id)
-        if not session:
-            logger.error(f"Session {session_id} not found during processing")
-            return
-        logger.info(f"Session retrieved: {session_id}")
-        
-        logger.info(f"Processing audio file at: {audio_path}")
-        
-        # Check if audio file exists
-        if not os.path.exists(audio_path):
-            logger.error(f"Audio file not found: {audio_path}")
-            state_manager.update_session_state(session_id, 'error')
-            socketio.emit('error', {'message': 'Audio file not found'}, room=session_id)
-            return
-        logger.info(f"Audio file exists at {audio_path}")
-        
-        # Transcribe audio
-        logger.info("Starting audio transcription...")
-        transcription = transcribe_audio(audio_path)
-        if not transcription:
-            logger.error(f"Failed to transcribe audio for session {session_id}")
-            state_manager.update_session_state(session_id, 'error')
-            socketio.emit('error', {'message': 'Failed to transcribe audio'}, room=session_id)
-            return
-        
-        logger.info(f"Transcription for session {session_id}: {transcription}")
-        
-        # Add user message to conversation history
-        session.add_message("user", transcription)
-        logger.info("Added user message to conversation history")
-        
-        # Get the Flask app (needed to access the config)
-        from flask import current_app
-        
-        # Use current_app directly instead of importing from server
-        with current_app.app_context():
-            # Now we're inside an application context
+            # Now we're inside a valid application context
+            from flask import current_app
+            
+            # Get app config and proceed with LLM response generation
             logger.info("Generating LLM response...")
             
             # Get app config
@@ -373,8 +398,7 @@ def process_audio_and_respond(session_id, audio_path):
             # Update turn index and move to waiting state
             session.turn_index += 1
             state_manager.update_session_state(session_id, 'waiting')
-            
-    except Exception as e:
-        logger.error(f"Error in process_audio_and_respond: {e}")
-        state_manager.update_session_state(session_id, 'error')
-        socketio.emit('error', {'message': f'Processing error: {str(e)}'}, room=session_id)
+        except Exception as e:
+            logger.error(f"Error in process_audio_and_respond: {e}")
+            state_manager.update_session_state(session_id, 'error')
+            socketio.emit('error', {'message': f'Processing error: {str(e)}'}, room=session_id)

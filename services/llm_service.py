@@ -1,3 +1,38 @@
+def _clean_response(response_text):
+    """
+    Clean the response from LLM to remove instruction tokens and take only the first response.
+    
+    Args:
+        response_text (str): Raw response from the LLM
+        
+    Returns:
+        str: Cleaned response text
+    """
+    # Remove any "Respond as the interviewer: [/INST]" text
+    if "Respond as the interviewer: [/INST]" in response_text:
+        response_text = response_text.split("Respond as the interviewer: [/INST]")[0].strip()
+    
+    # Remove any "Candidate: " prefixes that might be in the response
+    if response_text.startswith("Candidate:"):
+        response_text = response_text.split("\n", 1)[1].strip() if "\n" in response_text else ""
+    
+    # Remove instruction tokens like "[INST]" that might be left
+    response_text = response_text.replace("[INST]", "").replace("[/INST]", "")
+    
+    # If there are multiple lines with "Interviewer:" or "Candidate:", take only until the next "Candidate:"
+    if "Candidate:" in response_text:
+        response_text = response_text.split("Candidate:")[0].strip()
+    
+    # Clean up any trailing instruction-like text
+    if "Respond as the" in response_text:
+        response_text = response_text.split("Respond as the")[0].strip()
+        
+    # Final safety check - make sure we have some text
+    if not response_text.strip():
+        return "Thanks for sharing that information. Could you tell me more about your specific experience with those technologies?"
+    
+    return response_text.strip()
+
 """
 LLM service for generating interviewer responses.
 Handles model loading, prompt formatting, and response generation.
@@ -215,7 +250,10 @@ def generate_llm_response(user_input, conversation_history, personality_prompt,
             )
         
         # Decode response
-        response_text = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True).strip()
+        full_response = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True).strip()
+        
+        # Clean up the response - remove instruction tokens and get first interviewer response
+        response_text = _clean_response(full_response)
         
         # Log generation time
         elapsed_time = time.time() - start_time
