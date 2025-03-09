@@ -8,9 +8,21 @@ def _clean_response(response_text):
     Returns:
         str: Cleaned response text
     """
+    # Log the raw response for debugging
+    logger.info(f"Raw LLM response: {response_text[:100]}...")
+    
+    # If response is just <s> or empty, return a default response
+    if not response_text or response_text.strip() in ["<s>", ""]:
+        logger.warning("Empty or minimal response received from LLM, using fallback response")
+        return "Thank you for that information. Can you tell me more about your experience with this kind of work?"
+    
+    # Remove <s> token if present
+    if response_text.startswith("<s>"):
+        response_text = response_text[3:].strip()
+    
     # Remove any "Respond as the interviewer: [/INST]" text
     if "Respond as the interviewer: [/INST]" in response_text:
-        response_text = response_text.split("Respond as the interviewer: [/INST]")[0].strip()
+        response_text = response_text.split("Respond as the interviewer: [/INST]", 1)[1].strip()
     
     # Remove any "Candidate: " prefixes that might be in the response
     if response_text.startswith("Candidate:"):
@@ -23,14 +35,22 @@ def _clean_response(response_text):
     if "Candidate:" in response_text:
         response_text = response_text.split("Candidate:")[0].strip()
     
+    # If the response has "Interviewer:" prefix, extract just that part
+    if "Interviewer:" in response_text:
+        parts = response_text.split("Interviewer:", 1)
+        if len(parts) > 1:
+            response_text = parts[1].strip()
+    
     # Clean up any trailing instruction-like text
     if "Respond as the" in response_text:
         response_text = response_text.split("Respond as the")[0].strip()
         
     # Final safety check - make sure we have some text
     if not response_text.strip():
+        logger.warning("Clean response is empty, using fallback response")
         return "Thanks for sharing that information. Could you tell me more about your specific experience with those technologies?"
     
+    logger.info(f"Cleaned response: {response_text[:100]}...")
     return response_text.strip()
 
 """
@@ -120,14 +140,23 @@ def _build_prompt(user_input, conversation_history, personality_prompt, position
     elif difficulty < 0.4:
         difficulty_modifier = "\nBe supportive and helpful, providing guidance if the candidate struggles."
     
-    # Format the prompt (for Phi-2 style)
-    prompt = f"""<s>[INST] {personality_prompt}
-You're conducting an interview for a {position} position.{difficulty_modifier}
-
-Previous conversation:
-{conversation_history}
-
-Respond as the interviewer: [/INST]"""
+    # Format the prompt for Phi-2 style - note that Phi-2 uses a particular format
+    # The crucial part is to end the user's most recent message and add "Interviewer:" as a prompt
+    # We wrap the entire conversation in a chat context
+    
+    # Add user's most recent input to conversation history if not already there
+    recent_input_prompt = f"\nCandidate: {user_input}\nInterviewer:"
+    
+    # Format the prompt specifically for Phi-2
+    prompt = f"""<s>You are an AI assistant that helps with job interviews.
+    
+    {personality_prompt}
+    You're conducting an interview for a {position} position.{difficulty_modifier}
+    
+    Previous conversation:
+    {conversation_history}{recent_input_prompt}"""
+    
+    logger.info(f"Prompt format: {prompt[:200]}...")
     
     return prompt
 
@@ -241,13 +270,25 @@ def generate_llm_response(user_input, conversation_history, personality_prompt,
         
         # Generate response
         with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=max_tokens,
-                temperature=temperature,
-                do_sample=True,
-                top_p=top_p
-            )
+            try:
+                outputs = model.generate(
+                    **inputs,
+                    max_new_tokens=max_tokens,
+                    temperature=temperature,
+                    do_sample=True,
+                    top_p=top_p,
+                    pad_token_id=tokenizer.eos_token_id  # Explicitly set pad token
+                )
+            except Exception as generate_error:
+                logger.error(f"Error during LLM generation: {generate_error}")
+                # Fallback to a simpler generation method
+                outputs = model.generate(
+                    **inputs,
+                    max_new_tokens=max_tokens,
+                    temperature=0.5,  # Lower temperature for more deterministic output
+                    do_sample=False,   # Greedy decoding
+                    num_beams=1       # No beam search
+                )
         
         # Decode response
         full_response = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True).strip()

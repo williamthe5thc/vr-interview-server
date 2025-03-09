@@ -45,6 +45,7 @@ class InterviewSession:
         self.active = True
         self.created_at = time.time()
         self.last_activity = time.time()
+        self.state_timestamp = time.time()  # Add timestamp for state changes
         self.turn_index = 0
         
         # Conversation history

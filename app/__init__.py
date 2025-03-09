@@ -59,11 +59,28 @@ def create_app(config=None):
     os.makedirs(app.config['RESPONSE_FOLDER'], exist_ok=True)
     os.makedirs(app.config['CONVERSATION_FOLDER'], exist_ok=True)
     
-    # Initialize SocketIO with the app
-    socketio_kwargs = {
-        'cors_allowed_origins': '*',  # Allow connections from any origin
-        'async_mode': 'eventlet'
-    }
+    # Initialize SocketIO with the app - handle compatibility with different versions
+    try:
+        # Full configuration with all optimizations
+        socketio_kwargs = {
+            'cors_allowed_origins': '*',  # Allow connections from any origin
+            'async_mode': 'eventlet',
+            'ping_timeout': 60,  # Increase ping timeout for longer operations
+            'ping_interval': 25,  # More frequent pings to detect disconnects
+            'max_http_buffer_size': 50 * 1024 * 1024,  # 50MB buffer for larger payloads
+            'engineio_logger': True  # Enable detailed Socket.IO logging
+        }
+        
+        # Test if socketio accepts these parameters
+        test_socket = SocketIO(async_mode='eventlet', ping_timeout=60)
+        del test_socket
+    except TypeError as e:
+        # Fallback to basic configuration
+        logger.warning(f"Using basic SocketIO configuration due to: {e}")
+        socketio_kwargs = {
+            'cors_allowed_origins': '*',  # Allow connections from any origin
+            'async_mode': 'eventlet'
+        }
     
     # Update SocketIO config if provided
     if config and 'server' in config and 'cors_allowed_origins' in config['server']:

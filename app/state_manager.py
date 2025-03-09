@@ -5,7 +5,7 @@ Manages interview session states and provides session management functionality.
 import time
 import logging
 import threading
-from flask_socketio import SocketIO
+import eventlet
 
 # Import interview session class
 from app.interview_session import InterviewSession
@@ -38,6 +38,102 @@ class InterviewStateManager:
                 cls._instance = super(InterviewStateManager, cls).__new__(cls)
                 # Initialize the instance
                 cls._instance._initialize()
+                
+                # Use eventlet for broadcasting state updates
+                # This is more compatible with Windows
+                def broadcast_states():
+                    """Periodically broadcast session states to clients"""
+                    while True:
+                        try:
+                            # Sleep with longer interval to reduce log spam
+                            eventlet.sleep(20)
+                            
+                            # Skip if socketio is not available
+                            if not hasattr(cls._instance, 'socketio') or cls._instance.socketio is None:
+                                continue
+                            
+                            # Process each active session
+                            for session_id, session in cls._instance.active_sessions.items():
+                                if not session.active:
+                                    continue
+                                    
+                                try:
+                                    # Send state update silently (no logging)
+                                    cls._instance.socketio.emit('state_update', {
+                                        'session_id': session_id,
+                                        'state': session.state,
+                                        'turn': session.turn_index,
+                                        'previous_state': session.state
+                                    }, room=session_id)
+                                    # Debug broadcast message removed
+                                    
+                                    # Send explicit state update
+                                    cls._instance.socketio.emit('explicit_state_update', {
+                                        'session_id': session_id,
+                                        'state': session.state,
+                                        'turn': session.turn_index,
+                                        'previous_state': session.state
+                                    }, room=session_id)
+                                    
+                                    # Process stuck sessions
+                                    if session.state == 'processing' and hasattr(session, 'state_timestamp'):
+                                        stuck_time = time.time() - session.state_timestamp
+                                        
+                                        # Auto-recover after 40 seconds
+                                        if stuck_time > 40:
+                                            logger.warning(f"Session {session_id} stuck in processing state for >40s - auto-recovering")
+                                            
+                                            # Create fallback response
+                                            fallback_response = "Thank you for your question. Let me think about that for a moment. Could you tell me more about your experience in this field while I formulate my thoughts?"
+                                            
+                                            # Add to conversation history
+                                            session.add_message("interviewer", fallback_response)
+                                            
+                                            # Force state change
+                                            cls._instance.update_session_state(session_id, 'waiting')
+                                            
+                                            # Send recovery signals
+                                            cls._instance.socketio.emit('response_ready', {
+                                                'session_id': session_id,
+                                                'text': fallback_response,
+                                                'audio_url': '',
+                                                'is_recovery': True
+                                            }, room=session_id)
+                                            
+                                            # Also send direct state update
+                                            cls._instance.socketio.emit('explicit_state_update', {
+                                                'session_id': session_id,
+                                                'state': 'waiting',
+                                                'turn': session.turn_index,
+                                                'previous_state': 'processing'
+                                            }, room=session_id)
+                                            
+                                            # Signal ready for next input
+                                            cls._instance.socketio.emit('ready_for_next_input', {
+                                                'session_id': session_id,
+                                                'state': 'waiting',
+                                                'turn': session.turn_index
+                                            }, room=session_id)
+                                            
+                                    # For waiting state, always send ready_for_next_input
+                                    if session.state == 'waiting':
+                                        cls._instance.socketio.emit('ready_for_next_input', {
+                                            'session_id': session_id,
+                                            'state': 'waiting',
+                                            'turn': session.turn_index
+                                        }, room=session_id)
+                                        # Debug broadcast message removed
+                                        
+                                except Exception as e:
+                                    logger.error(f"Error broadcasting state for session {session_id}: {e}")
+                                    
+                        except Exception as e:
+                            logger.error(f"Error in state broadcast greenthread: {e}")
+                
+                # Start broadcasting using eventlet greenthread (not normal thread)
+                eventlet.spawn(broadcast_states)
+                logger.info("Started state broadcast greenthread")
+                
             return cls._instance
     
     def _initialize(self):
@@ -72,7 +168,8 @@ class InterviewStateManager:
         Returns:
             InterviewSession or None: The session if found, None otherwise
         """
-        return self.active_sessions.get(session_id)
+        session = self.active_sessions.get(session_id)
+        return session
     
     def get_session_by_client_id(self, client_id):
         """
@@ -130,6 +227,8 @@ class InterviewStateManager:
             logger.warning(f"Attempt to update non-existent session: {session_id}")
             return False
         
+        # Debug state flow message removed
+        
         # Log state transition
         logger.info(f"Session {session_id} state change: {session.state} -> {new_state}")
         
@@ -137,8 +236,9 @@ class InterviewStateManager:
         old_state = session.state
         session.state = new_state
         session.last_activity = time.time()
+        session.state_timestamp = time.time()  # Add state timestamp for timing tracking
         
-        # Send state update to client
+        # Send state update to client using nonblocking approach
         if hasattr(self, 'socketio') and self.socketio:
             try:
                 self.socketio.emit('state_update', {
@@ -147,6 +247,25 @@ class InterviewStateManager:
                     'turn': session.turn_index,
                     'previous_state': old_state
                 }, room=session_id)
+                # Debug event message removed
+                
+                # Also send an explicit state update
+                self.socketio.emit('explicit_state_update', {
+                    'session_id': session_id,
+                    'state': new_state,
+                    'turn': session.turn_index,
+                    'previous_state': old_state
+                }, room=session_id)
+                # Debug event message removed
+                
+                # If transitioning to waiting state, send ready_for_next_input
+                if new_state == 'waiting':
+                    self.socketio.emit('ready_for_next_input', {
+                        'session_id': session_id,
+                        'state': new_state,
+                        'turn': session.turn_index
+                    }, room=session_id)
+                    # Debug event message removed
             except Exception as e:
                 logger.error(f"Error sending state update: {e}")
         

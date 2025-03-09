@@ -8,24 +8,49 @@ import uuid
 import base64
 import logging
 import threading
+import time
+import json
 from flask import request, current_app
 from flask_socketio import emit, join_room, leave_room
 import eventlet
 
-# Import modules
+# Initialize state manager - must be done first
 from app.state_manager import InterviewStateManager
-from app.interview_session import InterviewSession
-from services.speech_processing import transcribe_audio, generate_speech
-from services.llm_service import generate_llm_response
-
-# Initialize state manager
 state_manager = InterviewStateManager()
+
+# Import other modules
+from app.interview_session import InterviewSession
+from services.worker_process import start_worker_process, stop_worker_process
+
+# Set up logging
 logger = logging.getLogger("interview-server")
 logger.info("web socket started")
+
+# Global variables
+input_queue = None
+output_queue = None
+worker_process = None
+processing_tasks = {}
+
+def initialize_worker():
+    """Initialize the worker process."""
+    global input_queue, output_queue, worker_process
+    if input_queue is None or output_queue is None or worker_process is None:
+        input_queue, output_queue, worker_process = start_worker_process()
+
 def register_events(socketio):
     """Register WebSocket event handlers with the SocketIO instance."""
+    # Initialize worker if needed
+    initialize_worker()
+    
+    # Set the socketio instance in the state manager
     state_manager.set_socketio(socketio)
-
+    
+    # Start the worker results handler thread
+    result_thread = threading.Thread(target=handle_worker_results, args=(socketio,))
+    result_thread.daemon = True
+    result_thread.start()
+    logger.info("Started worker results handler thread")
 
     @socketio.on('connect')
     def handle_connect():
@@ -72,7 +97,7 @@ def register_events(socketio):
         """Handle client joining a specific session."""
         session_id = data.get('session_id')
         client_id = request.sid
-        logger.info(f"join session thing")
+        # Debug message removed
         if not session_id:
             emit('error', {'message': 'Session ID required'})
             return
@@ -95,13 +120,21 @@ def register_events(socketio):
             'state': session.state,
             'turn': session.turn_index
         })
+        
+        # Also send explicit state update
+        emit('explicit_state_update', {
+            'session_id': session_id,
+            'state': session.state,
+            'turn': session.turn_index,
+            'previous_state': session.state
+        })
     
     @socketio.on('configure_session')
     def handle_configure_session(data):
         """Configure session parameters."""
         session_id = data.get('session_id')
         config = data.get('config', {})
-        logger.info(f"Client configure session")
+        # Debug message removed
 
         if not session_id:
             emit('error', {'message': 'Session ID required'})
@@ -129,7 +162,8 @@ def register_events(socketio):
     def handle_start_speaking(data):
         """Handle when user starts speaking."""
         session_id = data.get('session_id')
-        logger.info(f"start speaking")
+        # Debug state flow message removed
+        # Debug message removed
 
         if not session_id:
             emit('error', {'message': 'Session ID required'})
@@ -157,7 +191,7 @@ def register_events(socketio):
     @socketio.on('audio_data')
     def handle_audio_data(data):
         """Handle incoming audio data chunks."""
-        logger.info(f"audio data")
+        # Debug message removed
         session_id = data.get('session_id')
         audio_chunk = data.get('audio')  # Base64 encoded audio
         
@@ -184,6 +218,7 @@ def register_events(socketio):
     def handle_stop_speaking(data):
         """Handle when user stops speaking."""
         session_id = data.get('session_id')
+        # Debug state flow message removed
         logger.info(f"Received stop_speaking event for session {session_id}")
 
         if not session_id:
@@ -211,13 +246,8 @@ def register_events(socketio):
         )
         session.save_audio_buffer(audio_path)
         
-        # Process in a separate thread
-        processing_thread = threading.Thread(
-            target=process_audio_and_respond,
-            args=(session_id, audio_path)
-        )
-        processing_thread.daemon = True
-        processing_thread.start()
+        # Send task to worker process instead of processing directly
+        submit_processing_task(session_id, audio_path, session)
         
         emit('processing_started', {'session_id': session_id})
     
@@ -247,6 +277,313 @@ def register_events(socketio):
             'state': 'idle',
             'turn': 0
         })
+    
+    @socketio.on('get_state')
+    def handle_get_state(data):
+        """Handle requests for current state."""
+        session_id = data.get('session_id')
+        # Debug message removed
+        
+        if not session_id:
+            logger.error("Missing session ID in get_state request")
+            emit('error', {'message': 'Session ID required'})
+            return
+        
+        session = state_manager.get_session(session_id)
+        if not session:
+            logger.error(f"Session {session_id} not found for get_state request")
+            emit('error', {'message': 'Session not found'})
+            return
+        
+        # Send current state
+        emit('state_update', {
+            'session_id': session_id,
+            'state': session.state,
+            'turn': session.turn_index,
+            'previous_state': session.state  # Same as current since this is just a status update
+        })
+        
+        # Also send an explicit state update to handle any resynchronization issues
+        emit('explicit_state_update', {
+            'session_id': session_id,
+            'state': session.state,
+            'turn': session.turn_index,
+            'previous_state': session.state  # Same as current since this is just a status update
+        })
+        
+        # Add explicit ready_for_next_input notification if in waiting state
+        if session.state == 'waiting':
+            emit('ready_for_next_input', {
+                'session_id': session_id,
+                'state': 'waiting',
+                'turn': session.turn_index
+            })
+            logger.info(f"Sent ready_for_next_input for session {session_id} during get_state")
+        
+        logger.info(f"State requested for session {session_id}: {session.state}")
+        
+        # If we're in processing state for more than 45 seconds, try to reset to waiting
+        # This handles stuck states
+        if session.state == 'processing' and hasattr(session, 'state_timestamp') and \
+           (time.time() - session.state_timestamp) > 45:  # 45 seconds timeout
+            
+            logger.warning(f"Session {session_id} stuck in processing state for >45s during get_state - resetting to waiting")
+            
+            # Create a fallback response
+            fallback_response = "Thank you for your question. I'd like to explore that further. Can you tell me more about your experience with this?"
+            
+            # Add interviewer message to conversation history
+            session.add_message("interviewer", fallback_response)
+            
+            # Update state
+            state_manager.update_session_state(session_id, 'waiting')
+            
+            # Log the fact that we're sending this message
+            logger.info(f"Sending get_state recovery response to client for session {session_id}")
+            
+            # Send several notifications with slight delays to ensure delivery
+            emit('response_ready', {
+                'session_id': session_id,
+                'text': fallback_response,
+                'audio_url': '',
+                'is_recovery': True
+            })
+            
+            # Use non-blocking sleep
+            eventlet.sleep(0)
+            
+            # Send an explicit state update
+            emit('explicit_state_update', {
+                'session_id': session_id,
+                'state': 'waiting',
+                'turn': session.turn_index,
+                'previous_state': 'processing'
+            })
+            
+            # Use non-blocking sleep
+            eventlet.sleep(0)
+            
+            # Send ready for next input notification
+            emit('ready_for_next_input', {
+                'session_id': session_id,
+                'state': 'waiting',
+                'turn': session.turn_index
+            })
+            
+            # Log recovery action
+            logger.info(f"Session {session_id} recovered from stuck state during get_state")
+
+def submit_processing_task(session_id, audio_path, session):
+    """
+    Submit a processing task to the worker process.
+    
+    Args:
+        session_id (str): Session ID
+        audio_path (str): Path to audio file
+        session (InterviewSession): Session object
+    """
+    # Get the app
+    app = get_app()
+    
+    # Extract needed session data to avoid serializing the entire session
+    session_data = {
+        'interviewer_type': session.interviewer_type,
+        'position': session.position,
+        'difficulty': session.difficulty,
+        'turn_index': session.turn_index,
+        'conversation_history': session.conversation_history
+    }
+    
+    # Create task
+    task = {
+        'command': 'process_audio',
+        'session_id': session_id,
+        'audio_path': audio_path,
+        'config': {
+            'UPLOAD_FOLDER': app.config['UPLOAD_FOLDER'],
+            'RESPONSE_FOLDER': app.config['RESPONSE_FOLDER'],
+            'APP_CONFIG': app.config.get('APP_CONFIG', {})
+        },
+        'session_data': session_data,
+        'timestamp': time.time()
+    }
+    
+    # Make sure the worker is initialized
+    initialize_worker()
+    
+    # Register task in tracking dictionary
+    processing_tasks[session_id] = {
+        'task': task,
+        'status': 'submitted',
+        'timestamp': time.time()
+    }
+    
+    # Submit task to worker process
+    input_queue.put(task)
+    logger.info(f"Submitted processing task for session {session_id}")
+    
+def handle_worker_results(socketio):
+    """
+    Thread function that handles results from the worker process.
+    
+    Args:
+        socketio (SocketIO): Socket.IO instance for emitting events
+    """
+    logger.info("Worker results handler started")
+    
+    # Import eventlet here to ensure it's available and to monkeypatch this function
+    import eventlet
+    eventlet.sleep(0)  # Give control back to the event loop immediately
+    
+    while True:
+        try:
+            # Use non-blocking queue operations to avoid blocking the thread
+            try:
+                # Non-blocking get with a very short timeout
+                try:
+                    result = output_queue.get(timeout=0.01)
+                except:
+                    # No result available, continue loop
+                    eventlet.sleep(0.01)  # Short sleep to prevent CPU spinning
+                    continue
+                
+                # Get session ID from result
+                session_id = result.get('session_id')
+                
+                if not session_id:
+                    logger.warning(f"Received result without session ID: {result}")
+                    continue
+                
+                # Get app for app context
+                app = get_app()
+                
+                # Get session
+                with app.app_context():
+                    session = state_manager.get_session(session_id)
+                    
+                    if not session:
+                        logger.warning(f"Session {session_id} not found for result: {result}")
+                        continue
+                    
+                    # Handle different result types
+                    if result['status'] == 'error':
+                        # Handle error
+                        logger.error(f"Error in worker process for session {session_id}: {result.get('error')}")
+                        
+                        # Move to waiting state with an error message
+                        state_manager.update_session_state(session_id, 'waiting')
+                        
+                        # Send error message to client
+                        socketio.emit('error', {
+                            'message': f"Processing error: {result.get('error')}",
+                            'session_id': session_id
+                        }, room=session_id)
+                        
+                        # Also send a recovery response
+                        fallback_response = "I apologize, but I encountered an issue processing your response. Could you please try again or rephrase your question?"
+                        
+                        # Add interviewer message to conversation history
+                        session.add_message("interviewer", fallback_response)
+                        
+                        # Send recovery response
+                        socketio.emit('response_ready', {
+                            'session_id': session_id,
+                            'text': fallback_response,
+                            'audio_url': '',
+                            'is_recovery': True
+                        }, room=session_id)
+                        
+                        # Send ready for next input notification
+                        socketio.emit('ready_for_next_input', {
+                            'session_id': session_id,
+                            'state': 'waiting',
+                            'turn': session.turn_index
+                        }, room=session_id)
+                        
+                    elif result['status'] == 'progress':
+                        # Handle progress update
+                        logger.info(f"Progress update for session {session_id}: {result.get('message')} ({result.get('progress')}%)")
+                        
+                        # Store transcription if available
+                        if 'transcription' in result:
+                            # Make sure we haven't already added this message
+                            if not any(msg.get('text') == result['transcription'] and msg.get('speaker') == 'user' 
+                                    for msg in session.conversation_history):
+                                session.add_message("user", result['transcription'])
+                                logger.info(f"Added user message to conversation history for session {session_id}")
+                        
+                    elif result['status'] == 'success':
+                        # Handle success
+                        logger.info(f"Processing completed for session {session_id}")
+                        
+                        # Store response in conversation history if not already there
+                        response_text = result.get('response_text', '')
+                        if response_text and not any(msg.get('text') == response_text and msg.get('speaker') == 'interviewer' 
+                               for msg in session.conversation_history):
+                            session.add_message("interviewer", response_text)
+                        
+                        # Update state to waiting
+                        state_manager.update_session_state(session_id, 'waiting')
+                        
+                        # Send response to client
+                        socketio.emit('response_ready', {
+                            'session_id': session_id,
+                            'text': response_text,
+                            'audio_url': result.get('audio_url', '')
+                        }, room=session_id)
+                        
+                        # Use eventlet sleep instead of blocking time.sleep
+                        eventlet.sleep(0)
+                        
+                        # Send explicit state update
+                        socketio.emit('explicit_state_update', {
+                            'session_id': session_id,
+                            'state': 'waiting',
+                            'turn': session.turn_index,
+                            'previous_state': 'processing'
+                        }, room=session_id)
+                        
+                        # Increment turn index
+                        session.turn_index += 1
+                        
+                        # Send ready for next input notification
+                        socketio.emit('ready_for_next_input', {
+                            'session_id': session_id,
+                            'state': 'waiting',
+                            'turn': session.turn_index
+                        }, room=session_id)
+                    
+                    # Update task tracking
+                    if session_id in processing_tasks:
+                        processing_tasks[session_id]['status'] = result['status']
+                        processing_tasks[session_id]['updated'] = time.time()
+                        
+                        # Remove completed tasks after some time
+                        if result['status'] in ['success', 'error']:
+                            def cleanup_task():
+                                # Use non-blocking approach for cleanup
+                                start_time = time.time()
+                                def do_cleanup():
+                                    if time.time() - start_time >= 60 and session_id in processing_tasks:
+                                        del processing_tasks[session_id]
+                                import eventlet
+                                eventlet.sleep(60)  # Non-blocking sleep
+                                do_cleanup()
+                            
+                            cleanup_thread = threading.Thread(target=cleanup_task)
+                            cleanup_thread.daemon = True
+                            cleanup_thread.start()
+            except Exception as e:
+                # Just log and continue in case of error getting or processing a result
+                if "empty" not in str(e).lower():  # Ignore "queue is empty" errors
+                    logger.error(f"Error processing worker result: {e}")
+            
+            # Use eventlet sleep to avoid blocking the event loop
+            eventlet.sleep(0)
+            
+        except Exception as e:
+            logger.error(f"Error in worker result handler: {e}")
+            eventlet.sleep(0.1)  # Use shorter, non-blocking sleep on error
 
 def get_app():
     """
@@ -263,142 +600,51 @@ def get_app():
             return sys.modules['server'].app
         else:
             # If all else fails, import directly
-            from app import create_app
-            import json
-            with open("config.json", "r") as f:
-                config = json.load(f)
-            app, _ = create_app(config)
-            return app
+            try:
+                from app import create_app
+                import json
+                try:
+                    with open("config.json", "r") as f:
+                        config = json.load(f)
+                except:
+                    # Default config if file not found
+                    config = {"server": {"host": "0.0.0.0", "port": 8081}}
+                app, _ = create_app(config)
+                return app
+            except Exception as e:
+                logger.error(f"Error creating app in get_app: {e}")
+                return None
 
-def process_audio_and_respond(session_id, audio_path):
-    """
-    Process audio input and generate interviewer response.
-    This function runs in a separate thread.
-    """
-    logger.info(f"Starting process_audio_and_respond for session {session_id}")
-    
-    # Get the Flask app
-    app = get_app()
-    
-    # Create an application context
-    with app.app_context():
-        try:
-            # Get socketio from state manager
-            socketio = state_manager.socketio
-            if not socketio:
-                logger.error("SocketIO instance not available")
-                return
-            logger.info("SocketIO instance obtained from state manager")
+def cleanup():
+    """Clean up resources when server shuts down."""
+    global input_queue, worker_process
+    try:
+        if input_queue is not None and worker_process is not None:
+            # Send shutdown signal
+            input_queue.put({'command': 'shutdown'})
             
-            session = state_manager.get_session(session_id)
-            if not session:
-                logger.error(f"Session {session_id} not found during processing")
-                return
-            logger.info(f"Session retrieved: {session_id}")
+            # Wait with timeout
+            worker_process.join(timeout=5)
             
-            logger.info(f"Processing audio file at: {audio_path}")
-            
-            # Check if audio file exists
-            if not os.path.exists(audio_path):
-                logger.error(f"Audio file not found: {audio_path}")
-                state_manager.update_session_state(session_id, 'error')
-                socketio.emit('error', {'message': 'Audio file not found'}, room=session_id)
-                return
-            logger.info(f"Audio file exists at {audio_path}")
-            
-            # Transcribe audio
-            logger.info("Starting audio transcription...")
-            transcription = transcribe_audio(audio_path)
-            if not transcription:
-                logger.error(f"Failed to transcribe audio for session {session_id}")
-                state_manager.update_session_state(session_id, 'error')
-                socketio.emit('error', {'message': 'Failed to transcribe audio'}, room=session_id)
-                return
-            
-            logger.info(f"Transcription for session {session_id}: {transcription}")
-            
-            # Add user message to conversation history
-            session.add_message("user", transcription)
-            logger.info("Added user message to conversation history")
-        
-            # Now we're inside a valid application context
-            from flask import current_app
-            
-            # Get app config and proceed with LLM response generation
-            logger.info("Generating LLM response...")
-            
-            # Get app config
-            config = current_app.config.get('APP_CONFIG', {})
-            
-            # Get interviewer personality prompt from config
-            interviewer_type = session.interviewer_type
-            position = session.position
-            difficulty = session.difficulty
-            
-            interviewer_prompts = config.get('interview', {}).get('interviewer_types', {})
-            personality_prompt = interviewer_prompts.get(
-                interviewer_type, 
-                "You are an interviewer conducting a job interview."
-            )
-            
-            # Format conversation history for LLM
-            from services.llm_service import format_conversation_for_llm, generate_llm_response
-            formatted_history = format_conversation_for_llm(session.conversation_history)
-            
-            # Generate response from LLM
-            response_text = generate_llm_response(
-                transcription,
-                formatted_history,
-                personality_prompt,
-                position,
-                difficulty,
-                config
-            )
-            
-            if not response_text:
-                logger.error(f"Failed to generate LLM response for session {session_id}")
-                state_manager.update_session_state(session_id, 'error')
-                socketio.emit('error', {'message': 'Failed to generate response'}, room=session_id)
-                return
+            # Force terminate if still running
+            if worker_process.is_alive():
+                worker_process.terminate()
+                logger.info("Worker process terminated forcefully")
                 
-            logger.info(f"LLM response generated: {response_text}")
-            
-            # Add interviewer message to conversation history
-            session.add_message("interviewer", response_text)
-            
-            # Generate speech from text
-            response_audio_path = os.path.join(
-                current_app.config['RESPONSE_FOLDER'], 
-                f"{session_id}_{session.turn_index}.wav"
-            )
-            
-            success = generate_speech(response_text, response_audio_path, config)
-            if not success:
-                logger.warning(f"Failed to generate speech for session {session_id}, continuing with text only")
-            
-            # Update state to responding
-            state_manager.update_session_state(session_id, 'responding')
-            
-            # Construct relative URL for audio file
-            # This will be requested via HTTP
-            audio_url = f"/responses/{session_id}_{session.turn_index}.wav"
-            
-            # Send response to client
-            socketio.emit('response_ready', {
-                'session_id': session_id,
-                'text': response_text,
-                'audio_url': audio_url
-            }, room=session_id)
-            
-            # Wait a bit to simulate audio playback (client will notify when done in real impl)
-            # In a full implementation, the client would signal when audio playback is complete
-            estimated_playback_time = len(response_text.split()) * 0.3  # Rough estimate: 0.3s per word
-            eventlet.sleep(max(estimated_playback_time, 2))
-            
-            # Update turn index and move to waiting state
-            session.turn_index += 1
-            state_manager.update_session_state(session_id, 'waiting')
-        except Exception as e:
-            logger.error(f"Error in process_audio_and_respond: {e}")
-            state_manager.update_session_state(session_id, 'error')
-            socketio.emit('error', {'message': f'Processing error: {str(e)}'}, room=session_id)
+                # On Windows, we may need an additional kill
+                import os
+                import signal
+                import platform
+                if platform.system() == "Windows":
+                    try:
+                        # Try to kill the process directly by PID
+                        import subprocess
+                        subprocess.run(["taskkill", "/F", "/PID", str(worker_process.pid)], 
+                                      shell=True, capture_output=True)
+                        logger.info(f"Forced kill of worker process PID {worker_process.pid}")
+                    except Exception as ke:
+                        logger.warning(f"Could not kill worker process: {ke}")
+            else:
+                logger.info("Worker process exited gracefully")
+    except Exception as e:
+        logger.error(f"Error during cleanup: {e}")
